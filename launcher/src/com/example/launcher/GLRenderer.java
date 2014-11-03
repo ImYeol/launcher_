@@ -21,9 +21,15 @@ import android.os.IBinder;
 public class GLRenderer implements GLSurfaceView.Renderer{
 	
 	private Context context;
+	private GLView glview;
+
+	private float far= -30.0f;
+	private float placeOfCur=-10.f;
+	private float z_cur=-30.0f;
+	private float z_next=-30.0f;
 	
-	private float far= -110.0f;
-	private TextureImg cube; // (NEW)
+	private boolean CurLoadState=false;
+	private boolean NextLoadState=false;
 
 	private static float anglePyramid = 0; // Rotational angle in degree for
 											// pyramid (NEW)
@@ -33,32 +39,20 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 												// (NEW)
 	private static float speedCube = -1.5f; // Rotational speed for cube (NEW)
 
-	public GLRenderer(Context context)
+
+	public GLRenderer(Context context,GLView glview)
 	{
-		this.context=context;
-		cube=new TextureImg();
+		this.context=context;	
+		this.glview=glview;
 	}
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		// TODO Auto-generated method stub
 //		gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set color's clear-value to
-													// black
-/*        PackageManager manager = context.getPackageManager();
 
-        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        final List<ResolveInfo> apps = manager.queryIntentActivities(mainIntent, 0);
-        Collections.sort(apps, new ResolveInfo.DisplayNameComparator(manager));
-        
-        if (apps != null) {
-            final int count = apps.size();
-
-        }*/
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		
-		
+				
 		gl.glClearDepthf(1.0f); // Set depth's clear-value to farthest
 		gl.glEnable(GL10.GL_DEPTH_TEST); // Enables depth-buffer for hidden
 											// surface removal
@@ -72,7 +66,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		// You OpenGL|ES initialization code here
 		// ......
 		
-		cube.loadTexture(gl, context);    // Load image into Texture (NEW)
+		glview.CurAPK().loadTexture(gl, context);    // Load image into Texture (NEW)
 	    gl.glEnable(GL10.GL_TEXTURE_2D);  // Enable texture (NEW)
 	}
 
@@ -98,6 +92,18 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	      // ......
 	}
 
+	private void CurApkDraw(GL10 gl)
+	{
+		gl.glTranslatef(1.5f, 0.0f, z_cur);
+		gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
+		glview.CurAPK().draw(gl);
+	}
+	private void NextApkDraw(GL10 gl)
+	{
+		gl.glTranslatef(1.5f, 0.0f, z_next);
+		gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
+		glview.NextAPK().draw(gl);
+	}
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		// TODO Auto-generated method stub
@@ -105,22 +111,79 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		gl.glLoadIdentity(); // Reset the model-view matrix
 //		gl.glTranslatef(1.5f, 0.0f, -6.0f); // Translate right and into the
 											// screen
-		
-		gl.glTranslatef(1.5f, 0.0f, far);
-		//far+=0.3f;
-		if(far<=-20.0f)
-		{
-			far+=10.0f;
-			//far=-6.0f;
-		}
+		gl.glTranslatef(1.5f, 0.0f, z_cur);
 		
 		gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
+		
 //		gl.glRotatef(angleCube, 1.0f, 1.0f, 1.0f); // rotate about the axis
-													// (1,1,1) (NEW)
-		cube.draw(gl); // Draw the cube (NEW)
+		if(glview.IsExistCur())											// (1,1,1) (NEW)		
+			glview.CurAPK().draw(gl); // Draw the cube (NEW)
+		
+		if(glview.IsInvokedSwipe() && NextLoadState==false)
+		{
+			if (glview.CurAPK() == glview.NextAPK())    // initial load apkIcon
+			{
+				int nextPointer=glview.getIndexOfNextAPK(); 
+				glview.NextAPK_PointNext();               // next pointer points next
+				
+				CurApkDraw(gl);
 
+				if (z_cur <= placeOfCur) {
+					CurLoadState=true;
+					z_cur += 1.0f / 5.f;
+				}
+				glview.SwipeHandleDone();
+			}
+			else                      // not initial load apkIcon
+			{
+				if(CurLoadState==true && NextLoadState==false	)
+				{
+					NextLoadState=true;
+					placeOfCur=10.f;
+					CurApkDraw(gl);
+					NextApkDraw(gl);
+					
+					glview.SwipeHandleDone();
+				}
+			}
+		}
+		else            // when both cur and next are loading image 
+		{
+			if(CurLoadState==true)
+			{
+				CurApkDraw(gl);
+			}
+			if(NextLoadState==true)
+			{
+				NextApkDraw(gl);
+				if (z_next <= -10.f) {
+					NextLoadState=true;
+					z_next += 1.0f / 5.f;
+				}
+				else
+				{
+					NextLoadState=false;
+				}
+			}
+			if (z_cur <= placeOfCur) {
+				CurLoadState=true;
+				z_cur += 1.0f / 5.f;
+			}
+			else                       // change next to cur when cur is done loading image
+			{
+				CurLoadState=false;
+				if(NextLoadState==true)
+				{
+					CurLoadState=true;
+					glview.changeNextToCur();
+					NextLoadState=false;
+				}
+			}
+		}
 		// Update the rotational angle after each refresh (NEW)
-		angleCube += speedCube; // (NEW)
+		//angleCube += 10; // (NEW)
+	/*	if(angleCube <=60.f)
+			angleCube+=1; */
 	}
 
 }

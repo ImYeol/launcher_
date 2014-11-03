@@ -11,12 +11,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mGLView=new GLSurfaceView(this);
-		mGLView.setEGLConfigChooser(8,8,8,8,14,0);
-		mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-		mGLView.setOnDragListener(new glDragListener());
-		mGLView.setRenderer(new GLRenderer(this));
-		
+		mGLView=new GLSurfaceView(this);		
 		setContentView(mGLView);
 	}
 	

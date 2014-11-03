@@ -1,6 +1,5 @@
 package com.example.launcher;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -9,32 +8,38 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.opengl.GLUtils;
 
 public class TextureImg {
 	private FloatBuffer vertexBuffer; // Buffer for vertex-array
-	   private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
-	  
-	   private float obj_z= -100.0f;
-	   private float[] vertices = { // Vertices for a face
-	      -1.0f, -1.0f, 0.0f,  // 0. left-bottom-front
-	       1.0f, -1.0f, 0.0f,  // 1. right-bottom-front
-	      -1.0f,  1.0f, 0.0f,  // 2. left-top-front
-	       1.0f,  1.0f, 0.0f   // 3. right-top-front
-	   };
-	  
-	   float[] texCoords = { // Texture coords for the above face (NEW)
-	      0.0f, 1.0f,  // A. left-bottom (NEW)
-	      1.0f, 1.0f,  // B. right-bottom (NEW)
-	      0.0f, 0.0f,  // C. left-top (NEW)
-	      1.0f, 0.0f   // D. right-top (NEW)
-	   };
-	   int[] textureIDs = new int[1];   // Array for 1 texture-ID (NEW)
-	     
+	private FloatBuffer texBuffer; // Buffer for texture-coords-array (NEW)
+
+	private ResolveInfo info;
+	
+	private float obj_z = -100.0f;
+	private float[] vertices = { // Vertices for a face
+	-1.0f, -1.0f, 0.0f, // 0. left-bottom-front
+			1.0f, -1.0f, 0.0f, // 1. right-bottom-front
+			-1.0f, 1.0f, 0.0f, // 2. left-top-front
+			1.0f, 1.0f, 0.0f // 3. right-top-front
+	};
+
+	float[] texCoords = { // Texture coords for the above face (NEW)
+	0.0f, 1.0f, // A. left-bottom (NEW)
+			1.0f, 1.0f, // B. right-bottom (NEW)
+			0.0f, 0.0f, // C. left-top (NEW)
+			1.0f, 0.0f // D. right-top (NEW)
+	};
+	int[] textureIDs = new int[1]; // Array for 1 texture-ID (NEW)
+
 	   // Constructor - Set up the buffers
-	   public TextureImg() {
+	   public TextureImg(ResolveInfo info) {
+		   
+		   this.info= info;
+		   
 	      // Setup vertex-array buffer. Vertices in float. An float has 4 bytes
 	      ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
 	      vbb.order(ByteOrder.nativeOrder()); // Use native byte order
@@ -84,8 +89,11 @@ public class TextureImg {
 	      gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
 	  
 	      // Construct an input stream to texture image "res\drawable\nehe.png"
-	      InputStream istream = context.getResources().openRawResource(R.drawable.iron_man);
-	      Bitmap bitmap;
+	 //     InputStream istream = context.getResources().openRawResource(R.drawable.iron_man);
+	      BitmapDrawable drawableIcon=(BitmapDrawable)info.loadIcon(context.getPackageManager());
+	      Bitmap bitmap=drawableIcon.getBitmap();
+	      /*
+	    
 	      try {
 	         // Read and decode input as bitmap
 	         bitmap = BitmapFactory.decodeStream(istream);
@@ -93,11 +101,12 @@ public class TextureImg {
 	         try {
 	            istream.close();
 	         } catch(IOException e) { }
-	      }
+	      } */
 	  
 	      // Build Texture from loaded bitmap for the currently-bind texture ID
 	      GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
 	      bitmap.recycle();
 	   }
+
 
 }
