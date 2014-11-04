@@ -17,6 +17,7 @@ import android.content.pm.ResolveInfo;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.os.IBinder;
+import android.util.Log;
 
 public class GLRenderer implements GLSurfaceView.Renderer{
 	
@@ -66,7 +67,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		// You OpenGL|ES initialization code here
 		// ......
 		
-		glview.CurAPK().loadTexture(gl, context);    // Load image into Texture (NEW)
+		glview.loadTexture(gl);    // Load image into Texture (NEW)
 	    gl.glEnable(GL10.GL_TEXTURE_2D);  // Enable texture (NEW)
 	}
 
@@ -100,10 +101,13 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	}
 	private void NextApkDraw(GL10 gl)
 	{
+		glview.NextAPK().loadTexture(gl, context);    // Load image into Texture (NEW)
+	    gl.glEnable(GL10.GL_TEXTURE_2D);
 		gl.glTranslatef(1.5f, 0.0f, z_next);
 		gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
 		glview.NextAPK().draw(gl);
 	}
+
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		// TODO Auto-generated method stub
@@ -111,79 +115,22 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		gl.glLoadIdentity(); // Reset the model-view matrix
 //		gl.glTranslatef(1.5f, 0.0f, -6.0f); // Translate right and into the
 											// screen
-		gl.glTranslatef(1.5f, 0.0f, z_cur);
+//		gl.glTranslatef(1.5f, 0.0f, z_cur);
 		
-		gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
+//		gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
 		
 //		gl.glRotatef(angleCube, 1.0f, 1.0f, 1.0f); // rotate about the axis
-		if(glview.IsExistCur())											// (1,1,1) (NEW)		
-			glview.CurAPK().draw(gl); // Draw the cube (NEW)
+//		if(glview.IsExistCur())											// (1,1,1) (NEW)		
+//			glview.CurAPK().draw(gl); // Draw the cube (NEW)
 		
-		if(glview.IsInvokedSwipe() && NextLoadState==false)
+		if(glview.IsInvokedSwipe())
 		{
-			if (glview.CurAPK() == glview.NextAPK())    // initial load apkIcon
-			{
-				int nextPointer=glview.getIndexOfNextAPK(); 
-				glview.NextAPK_PointNext();               // next pointer points next
-				
-				CurApkDraw(gl);
-
-				if (z_cur <= placeOfCur) {
-					CurLoadState=true;
-					z_cur += 1.0f / 5.f;
-				}
-				glview.SwipeHandleDone();
-			}
-			else                      // not initial load apkIcon
-			{
-				if(CurLoadState==true && NextLoadState==false	)
-				{
-					NextLoadState=true;
-					placeOfCur=10.f;
-					CurApkDraw(gl);
-					NextApkDraw(gl);
-					
-					glview.SwipeHandleDone();
-				}
-			}
+			Log.d("InVoked", "asdf/33333333");
+		//	glview.setDisappearedPlace();  // 	
+			glview.SwipeHandleDone();
+			glview.setDisappearedPlace();  //
 		}
-		else            // when both cur and next are loading image 
-		{
-			if(CurLoadState==true)
-			{
-				CurApkDraw(gl);
-			}
-			if(NextLoadState==true)
-			{
-				NextApkDraw(gl);
-				if (z_next <= -10.f) {
-					NextLoadState=true;
-					z_next += 1.0f / 5.f;
-				}
-				else
-				{
-					NextLoadState=false;
-				}
-			}
-			if (z_cur <= placeOfCur) {
-				CurLoadState=true;
-				z_cur += 1.0f / 5.f;
-			}
-			else                       // change next to cur when cur is done loading image
-			{
-				CurLoadState=false;
-				if(NextLoadState==true)
-				{
-					CurLoadState=true;
-					glview.changeNextToCur();
-					NextLoadState=false;
-				}
-			}
-		}
-		// Update the rotational angle after each refresh (NEW)
-		//angleCube += 10; // (NEW)
-	/*	if(angleCube <=60.f)
-			angleCube+=1; */
+		glview.DrawObjects(gl);
 	}
 
 }

@@ -3,12 +3,15 @@ package com.example.launcher;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.microedition.khronos.opengles.GL10;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 import android.view.MotionEvent;
 
 public class GLView extends GLSurfaceView {
@@ -27,10 +30,11 @@ public class GLView extends GLSurfaceView {
 	private List<TextureImg> ListTexture;
 	private int CntSwipe=0;
 	
+	private int CntAlive=0;
 	private static int indexOfCurAPK=0;
 	private static int indexOfNextAPK=0;
-	
-	
+	private PackageManager manager;
+	private List<ResolveInfo> apps;
 	public GLView(Context context) {
 		super(context);
 		// TODO Auto-generated constructor stub
@@ -39,7 +43,6 @@ public class GLView extends GLSurfaceView {
 		init_ListTexture();
 		
 		renderer= new GLRenderer(context,this);
-		ListTexture= new ArrayList<TextureImg>();
 		
 		this.requestFocus();
 		this.setFocusableInTouchMode(true);
@@ -51,32 +54,78 @@ public class GLView extends GLSurfaceView {
 
 	private void init_ListTexture()
 	{
-       PackageManager manager = context.getPackageManager();
+        manager = context.getPackageManager();
 
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        final List<ResolveInfo> apps = manager.queryIntentActivities(mainIntent, 0);
+        apps = manager.queryIntentActivities(mainIntent, 0);
         
-        ListTextureSize=apps.size();
-        
+        ListTexture= new ArrayList<TextureImg>();
         for(ResolveInfo info : apps)
         {
-        	ListTexture.add(new TextureImg(info));
+        	ListTexture.add(new TextureImg(info,this));
+        	ListTexture.get(ListTexture.size()-1).setInfo(info.loadIcon(manager), info.resolvePackageName);
         }
+        ListTextureSize=ListTexture.size();
+        Log.d("list_texture_size", "size:!!!!!!!"+ListTextureSize);
         CurAppIcon=NextAppIcon=ListTexture.get(0);
         
 	}
-	public boolean IsExistCur()
+	public void changeCurrentAPK()
 	{
-		if(CurAppIcon==null)
-			return false;
-		else
-			return true;
+		int index=indexOfCurAPK;
+		if((++index)>=ListTextureSize)
+			index=0;
+		TextureImg temp=null;
+		do
+		{
+			temp=ListTexture.get(index);
+			if(temp.getState().IsLoading==true)
+			{
+				temp.getState().setCurrent(true);
+				indexOfCurAPK=index;
+				break;
+			}				
+		}while(temp.getState().IsLoading==false);
+	}
+	public int getSwipeCnt()
+	{
+		return CntSwipe;
+	}
+	public void setDisappearedPlace()
+	{
+		for(int i=0;i<CntAlive-1;i++){
+			ListTexture.get(indexOfCurAPK+i).getState().setDissapearedZ();
+		}
+	}
+	public void DrawObjects(GL10 gl)
+	{
+		int index=indexOfCurAPK;
+		TextureImg temp=null;
+		while(index != indexOfNextAPK)
+		{
+			temp=ListTexture.get(index);
+			if(temp.getState().IsLoading==true)
+				ListTexture.get(index).draw(gl);
+			
+			if((++index)>=ListTextureSize)
+				index=0;
+		}
+	}
+	public void loadTexture(GL10 gl	)
+	{
+		int index=indexOfCurAPK;
+		while(index != indexOfNextAPK)
+		{
+			ListTexture.get(index).loadTexture(gl, context);
+			if((++index)>=ListTextureSize)
+				index=0;
+		}
 	}
 	public boolean IsInvokedSwipe()
 	{
-		if(CntSwipe >= 0)
+		if(CntSwipe > 0)
 		{
 			return true;
 		}
@@ -90,11 +139,11 @@ public class GLView extends GLSurfaceView {
 	}
 	public TextureImg CurAPK()
 	{
-		return CurAppIcon;
+		return ListTexture.get(indexOfCurAPK);
 	}
 	public TextureImg NextAPK()
 	{
-		return NextAppIcon;
+		return ListTexture.get(indexOfNextAPK);
 	}
 	public int getListSize()
 	{
@@ -115,6 +164,8 @@ public class GLView extends GLSurfaceView {
 		NextAPK_PointNext();
 		indexOfCurAPK=temp;
 		
+		Log.d("changeNextToCur", "next index:"+indexOfNextAPK + " cur index:"+indexOfCurAPK);
+		
 	}
 	public void NextAPK_PointNext()
 	{
@@ -125,8 +176,9 @@ public class GLView extends GLSurfaceView {
 				indexOfNextAPK=0;
 			}
 			
-		}while(indexOfNextAPK!=indexOfCurAPK);
-		NextAppIcon=ListTexture.get(indexOfNextAPK);
+		}while(indexOfNextAPK==indexOfCurAPK);
+		
+		Log.d("next apk point", "ListTextureSize:"+ ListTextureSize + " next index:"+indexOfNextAPK);
 	}
 	public void CurAPK_PointNext()
 	{
@@ -137,10 +189,13 @@ public class GLView extends GLSurfaceView {
 				indexOfCurAPK=0;
 			}
 			
-		}while(indexOfCurAPK!=indexOfNextAPK);
+		}while(indexOfCurAPK==indexOfNextAPK);
 		CurAppIcon=ListTexture.get(indexOfCurAPK);
 	}
-
+	public void APKAliveDecrement()
+	{
+		--CntAlive;
+	}
 	@Override
 	public boolean onTouchEvent(MotionEvent evt) {
 		// TODO Auto-generated method stub
@@ -156,6 +211,10 @@ public class GLView extends GLSurfaceView {
 	        	 	if(Math.abs(diff)>=EPSILON)
 	        	 	{
 	        	 		CntSwipe++;
+	        	 		NextAPK().initialize_Coordinate();
+	        	 		NextAPK().getState().IsLoading=true;
+	        	 		NextAPK_PointNext();  // next index is changed
+	        	 		CntAlive++;
 	        	 	}
 	      }
 	      return true;  // Event handled

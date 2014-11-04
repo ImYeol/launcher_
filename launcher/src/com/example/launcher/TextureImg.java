@@ -11,24 +11,32 @@ import android.content.Context;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.opengl.GLUtils;
+import android.util.Log;
 
 public class TextureImg {
 	private FloatBuffer vertexBuffer; // Buffer for vertex-array
 	private FloatBuffer texBuffer; // Buffer for texture-coords-array (NEW)
 
 	private ResolveInfo info;
+	private State state; 
+	private GLView glview;
+
+	private Drawable AppImage;
+	private String AppName;
 	
-	private float obj_z = -100.0f;
+	private float x=1.5f,y=0.0f,z=-30.0f;
+	
 	private float[] vertices = { // Vertices for a face
-	-1.0f, -1.0f, 0.0f, // 0. left-bottom-front
+			-1.0f, -1.0f, 0.0f, // 0. left-bottom-front
 			1.0f, -1.0f, 0.0f, // 1. right-bottom-front
 			-1.0f, 1.0f, 0.0f, // 2. left-top-front
 			1.0f, 1.0f, 0.0f // 3. right-top-front
 	};
 
 	float[] texCoords = { // Texture coords for the above face (NEW)
-	0.0f, 1.0f, // A. left-bottom (NEW)
+			0.0f, 1.0f, // A. left-bottom (NEW)
 			1.0f, 1.0f, // B. right-bottom (NEW)
 			0.0f, 0.0f, // C. left-top (NEW)
 			1.0f, 0.0f // D. right-top (NEW)
@@ -36,10 +44,11 @@ public class TextureImg {
 	int[] textureIDs = new int[1]; // Array for 1 texture-ID (NEW)
 
 	   // Constructor - Set up the buffers
-	   public TextureImg(ResolveInfo info) {
+	   public TextureImg(ResolveInfo info, GLView glview) {
 		   
 		   this.info= info;
-		   
+		   this.state=new State();
+		   this.glview=glview;
 	      // Setup vertex-array buffer. Vertices in float. An float has 4 bytes
 	      ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
 	      vbb.order(ByteOrder.nativeOrder()); // Use native byte order
@@ -54,9 +63,17 @@ public class TextureImg {
 	      texBuffer.put(texCoords);
 	      texBuffer.position(0);
 	   }
-	   
+	   public void setInfo(Drawable img,String name)
+	   {
+		   this.AppImage=img;
+		   this.AppName=name;
+	   }
 	   // Draw the shape
 	   public void draw(GL10 gl) {
+		   
+		   gl.glTranslatef(x,y,z);
+		   gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 	      gl.glFrontFace(GL10.GL_CCW);    // Front face in counter-clockwise orientation
 	      gl.glEnable(GL10.GL_CULL_FACE); // Enable cull face
 	      gl.glCullFace(GL10.GL_BACK);    // Cull the back face (don't display) 
@@ -77,6 +94,29 @@ public class TextureImg {
 	      gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 	      gl.glDisable(GL10.GL_CULL_FACE);
 
+	      if(z> state.displayedPlace && z<= state.disspearedPlace)
+	      {
+	    	  if(state.IsCompleted()==false)
+	    	  {
+	    		 // glview.SwipeHandleDone();
+	    		  state.setCompleted(true);
+	    	  }
+	      }
+	      if(z<=state.getZ())
+	      {
+	    	  z+=3.f;
+	      }
+	      else if(z > state.disspearedPlace)
+	      {
+	    	  if(state.getCurrent())
+	    	  {
+	    		 glview.changeCurrentAPK();
+	    		 state.setCurrent(false);
+	    	  }
+	    	  this.state.IsLoading=false;
+	    	  //z=-30.0f;
+	      }
+	      Log.d("z", "z: "+z);
 	   }
 	  
 	   // Load an image into GL texture
@@ -90,23 +130,26 @@ public class TextureImg {
 	  
 	      // Construct an input stream to texture image "res\drawable\nehe.png"
 	 //     InputStream istream = context.getResources().openRawResource(R.drawable.iron_man);
-	      BitmapDrawable drawableIcon=(BitmapDrawable)info.loadIcon(context.getPackageManager());
+	      
+	      
+	//      BitmapDrawable drawableIcon=(BitmapDrawable)info.loadIcon(context.getPackageManager());
+	//      Bitmap bitmap=drawableIcon.getBitmap();
+	      BitmapDrawable drawableIcon=(BitmapDrawable)AppImage;
 	      Bitmap bitmap=drawableIcon.getBitmap();
-	      /*
-	    
-	      try {
-	         // Read and decode input as bitmap
-	         bitmap = BitmapFactory.decodeStream(istream);
-	      } finally {
-	         try {
-	            istream.close();
-	         } catch(IOException e) { }
-	      } */
-	  
+
 	      // Build Texture from loaded bitmap for the currently-bind texture ID
 	      GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
 	      bitmap.recycle();
 	   }
-
-
+	   public State getState()
+	   {
+		   return state;
+		   
+	   }
+	   public void initialize_Coordinate()
+	   {
+		   this.x=1.5f;
+		   this.y=0.0f;
+		   this.z=-30.0f;
+	   }
 }
