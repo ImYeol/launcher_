@@ -97,7 +97,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	{
 		gl.glTranslatef(1.5f, 0.0f, z_cur);
 		gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
-		glview.CurAPK().draw(gl);
+	//	glview.CurAPK().draw(gl);
 	}
 	private void NextApkDraw(GL10 gl)
 	{
@@ -105,7 +105,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	    gl.glEnable(GL10.GL_TEXTURE_2D);
 		gl.glTranslatef(1.5f, 0.0f, z_next);
 		gl.glScalef(0.8f, 0.8f, 0.8f); // Scale down (NEW)
-		glview.NextAPK().draw(gl);
+	//	glview.NextAPK().draw(gl);
 	}
 
 	@Override

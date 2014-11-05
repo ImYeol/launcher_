@@ -1,5 +1,8 @@
 package com.example.launcher;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +37,17 @@ public class GLView extends GLSurfaceView {
 	private static int indexOfCurAPK=0;
 	private static int indexOfNextAPK=0;
 	private PackageManager manager;
-	private List<ResolveInfo> apps;
+	
+	private FloatBuffer texBuffer;
+	
+	private int[] textureIds=new int[5];
+	float[] texCoords = { // Texture coords for the above face (NEW)
+			0.0f, 1.0f, // A. left-bottom (NEW)
+			1.0f, 1.0f, // B. right-bottom (NEW)
+			0.0f, 0.0f, // C. left-top (NEW)
+			1.0f, 0.0f // D. right-top (NEW)
+	};
+//	private List<ResolveInfo> apps;
 	public GLView(Context context) {
 		super(context);
 		// TODO Auto-generated constructor stub
@@ -59,18 +72,19 @@ public class GLView extends GLSurfaceView {
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        apps = manager.queryIntentActivities(mainIntent, 0);
-        
+        final List<ResolveInfo> apps = manager.queryIntentActivities(mainIntent, 0);
+        int i=0;
         ListTexture= new ArrayList<TextureImg>();
         for(ResolveInfo info : apps)
         {
         	ListTexture.add(new TextureImg(info,this));
         	ListTexture.get(ListTexture.size()-1).setInfo(info.loadIcon(manager), info.resolvePackageName);
+        	ListTexture.get(ListTexture.size()-1).setIndex(i);
+        	i++;
         }
         ListTextureSize=ListTexture.size();
         Log.d("list_texture_size", "size:!!!!!!!"+ListTextureSize);
         CurAppIcon=NextAppIcon=ListTexture.get(0);
-        
 	}
 	public void changeCurrentAPK()
 	{
@@ -103,25 +117,38 @@ public class GLView extends GLSurfaceView {
 	{
 		int index=indexOfCurAPK;
 		TextureImg temp=null;
+		int id=0;
 		while(index != indexOfNextAPK)
 		{
 			temp=ListTexture.get(index);
 			if(temp.getState().IsLoading==true)
-				ListTexture.get(index).draw(gl);
-			
+			{
+				ListTexture.get(index).loadTexture(gl, context, id);
+				ListTexture.get(index).draw(gl,texBuffer);
+			}
 			if((++index)>=ListTextureSize)
 				index=0;
+			id++;
 		}
 	}
 	public void loadTexture(GL10 gl	)
 	{
-		int index=indexOfCurAPK;
+		
+		gl.glGenTextures(5, textureIds,0);
+		ByteBuffer tbb = ByteBuffer.allocateDirect(texCoords.length * 4);
+	      tbb.order(ByteOrder.nativeOrder());
+	      texBuffer = tbb.asFloatBuffer();
+	      texBuffer.put(texCoords);
+	      texBuffer.position(0);
+	      
+	/*	int index=indexOfCurAPK;
 		while(index != indexOfNextAPK)
 		{
-			ListTexture.get(index).loadTexture(gl, context);
+			if(ListTexture.get(index).getState().IsLoading)
+				ListTexture.get(index).loadTexture(gl, context);
 			if((++index)>=ListTextureSize)
 				index=0;
-		}
+		} */
 	}
 	public boolean IsInvokedSwipe()
 	{
