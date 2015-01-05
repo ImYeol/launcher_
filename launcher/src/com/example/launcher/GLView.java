@@ -1,4 +1,4 @@
-package com.example.glasstest;
+package com.example.launcher;
 
 import android.app.PendingIntent;
 import android.content.Context;

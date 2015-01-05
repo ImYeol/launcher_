@@ -1,4 +1,4 @@
-package com.example.glasstest;
+package com.example.launcher;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -10,6 +10,9 @@ import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import com.example.Voice.VoiceActivity;
+
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.glasstest;
+package com.example.launcher;
 
 import javax.microedition.khronos.opengles.GL10;
 
