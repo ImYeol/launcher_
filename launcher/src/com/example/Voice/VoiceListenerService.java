@@ -62,7 +62,6 @@ public class VoiceListenerService extends Service {
 	public void registerCallback(VoiceListener callback) {
 		this.mCallback = callback;
 	}
-
 	@Override
 	public void onCreate() {
 		super.onCreate();
