@@ -7,13 +7,14 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Say Command"
+        android:text="Comment:"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
-        android:id="@+id/command_text"
-        android:layout_width="wrap_content"
+        android:id="@+id/comment_text"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="0.50"
         android:text="TextView" />
 
 </LinearLayout>

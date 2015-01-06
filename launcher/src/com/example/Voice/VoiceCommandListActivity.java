@@ -1,23 +1,12 @@
 package com.example.Voice;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
-import android.util.Log;
-import android.widget.ProgressBar;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.Camera.CameraActivity;
-import com.google.android.glass.media.Sounds;
-import com.google.android.glass.touchpad.GestureDetector;
+import com.example.launcher.R;
+import com.example.util.IntentBuilder;
 
 public class VoiceCommandListActivity extends VoiceActivity {
 
@@ -27,8 +16,8 @@ public class VoiceCommandListActivity extends VoiceActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.voice_layout);
-		tv=(TextView)findViewById(R.id.textView);
+		setContentView(R.layout.voice_commands_list_layout);
+		tv=(TextView)findViewById(R.id.command_text);
 	}
 	@Override
 	protected void onStart() {
@@ -44,16 +33,31 @@ public class VoiceCommandListActivity extends VoiceActivity {
 		mVoiceCommandListener.unBindService();
 	}
 	
-	public void setCommands()
+/*	public void setCommands()
 	{
 		VoiceCommand voiceCommand=new VoiceCommand();
 		voiceCommand.add("take a picture");
 		voiceCommand.add("finish");
 		mVoiceCommandListener.setCommands(voiceCommand);
-	}
+	} */
 	
+	@Override
 	public void onVoiceCommand(String command) {
-		
+		if(command.contains("take a picture"))
+		{
+			tv.setText(command);
+			Intent intent=IntentBuilder.CreateIntent(this, ImageView.class).build();
+			IntentBuilder.startActivity(this, intent);
+		}
+		else if(command.contains("finish"))
+		{
+			tv.setText(command);
+			this.finish();
+		}
+		else
+		{
+			tv.setText(command);
+		}
 	}
 
 }

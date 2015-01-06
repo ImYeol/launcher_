@@ -13,30 +13,22 @@ import com.google.android.glass.media.Sounds;
 import com.google.android.glass.touchpad.GestureDetector;
 
 public class ProgressBarHelper {
-	private static final String TAG = "SREC Test";
-	private static final int SPEECH_REQUEST = 0;
-	private GestureDetector mGestureDetector;
-	private SpeechRecognizer mRecognizer;
-	private Intent i;
-	private TextView tv;
+	
 	private long start=0;
 	private long end=0;
 	private ProgressBar pb;
 	private volatile Thread progressBarThread;
 	private int CurrentPosition=0;
 	private AudioManager audio;
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.voice_layout);
-		tv=(TextView)findViewById(R.id.textView);
-		pb=(ProgressBar)findViewById(R.id.progressBar);
+	
+	public ProgressBarHelper() {
+		// TODO Auto-generated constructor stub
+//		super.onCreate(savedInstanceState);
+//		setContentView(R.layout.voice_layout);
+//		tv=(TextView)findViewById(R.id.textView);
+//		pb=(ProgressBar)findViewById(R.id.progressBar);
 		pb.setVisibility(ProgressBar.GONE);
 		start=System.currentTimeMillis();
-		Log.d("main", "start!!!");
-		Intent i;
-		
-//		mRecognizer.startListening(i);
 	}
 	public void startProgressBarThread()
 	{
@@ -88,8 +80,5 @@ public class ProgressBarHelper {
 				}
 			}
 		};
-	};
-	public void onVoiceCommand(String command) {
-		
 	};
 }

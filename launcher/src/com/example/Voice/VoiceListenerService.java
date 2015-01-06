@@ -3,6 +3,10 @@ package com.example.Voice;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import com.google.android.glass.media.Sounds;
+
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -41,7 +45,8 @@ public class VoiceListenerService extends Service {
 	private VoiceListener mCallback;
 
 	private VoiceCommand commands;
-
+	private AudioManager audio;
+	
 	public class VoiceListenerBinder extends Binder {
 		VoiceListenerService getService() {
 			return VoiceListenerService.this;
@@ -72,6 +77,7 @@ public class VoiceListenerService extends Service {
 				RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
 		mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
+		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 	}
 
 	@Override
@@ -166,7 +172,8 @@ public class VoiceListenerService extends Service {
 	}
 
 	protected class SpeechRecognitionListener implements RecognitionListener {
-
+		
+		ProgressDialog voiceRecoginitionDialog;
 		@Override
 		public void onBeginningOfSpeech() {
 			// speech input will be processed, so there is no need for count
@@ -175,6 +182,9 @@ public class VoiceListenerService extends Service {
 				mIsCountDownOn = false;
 				mNoSpeechCountDown.cancel();
 			}
+			voiceRecoginitionDialog=ProgressDialog.show(getApplicationContext(), null, null);
+			audio.playSoundEffect(Sounds.SUCCESS);
+			
 			Log.d(tag, "onBeginingOfSpeech"); //$NON-NLS-1$
 		}
 
@@ -211,9 +221,11 @@ public class VoiceListenerService extends Service {
 			str = str.subSequence(1, str.length() - 1).toString();
 			Log.d(tag, "result " + str);
 
-			if (commands.contains(str)) {
+			if (commands !=null && commands.contains(str)) {
 				mCallback.onVoiceCommand(str);
 				ReStartListening();
+				if(voiceRecoginitionDialog.isShowing())
+					voiceRecoginitionDialog.dismiss();
 			}
 
 		}
@@ -233,15 +245,22 @@ public class VoiceListenerService extends Service {
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
 			Log.d(tag, "result " + str);
-			if (commands.contains(str)) {
+			if (commands !=null && commands.contains(str)) {
 				mCallback.onVoiceCommand(str);
 			}
 			ReStartListening();
+			if(voiceRecoginitionDialog.isShowing())
+				voiceRecoginitionDialog.dismiss();
 		}
 
 		@Override
 		public void onRmsChanged(float rmsdB) {
 		}
 
+	}
+
+	public void ReSetCommands() {
+		// TODO Auto-generated method stub
+		commands=null;
 	}
 }

@@ -21,7 +21,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -39,194 +41,135 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
-
-import com.example.Voice.SpeechCommandList;
 import com.example.Voice.VoiceActivity;
+import com.example.Voice.VoiceCommand;
+import com.example.launcher.R;
 import com.google.android.glass.content.Intents;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
 
 public class CameraActivity extends VoiceActivity {
-	
-//	private SpeechBroadcastReceiver receiver;
+
+	// private SpeechBroadcastReceiver receiver;
 	private Intent i;
-	private static final String tag="NewActivity";
-	private static final int TAKE_PICTURE_REQUEST = 1;
+	private static final String tag = "CameraActivity";
 	private CameraSurfaceView cameraView;
-	private Camera mCamera; 
+	private Camera mCamera;
 	private GestureDetector mGestureDetector;
-	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-	private Uri fileUri;
-	public static final int MEDIA_TYPE_IMAGE=1;
-	public static final int MEDIA_TYPE_VIDEO=2;
+	public static final int MEDIA_TYPE_IMAGE = 1;
+	public static final int MEDIA_TYPE_VIDEO = 2;
 	private BroadcastReceiver receiver;
+
+	private List<String> CommandList=Arrays.asList("Catch","finish");
+	private VoiceCommand voiceCommand;
+	private TakePictureCallback mPictureCallback;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.camera);
 		mGestureDetector = createGestureDetector(this);
-		mCamera=getCameraInstance();
-		cameraView=new CameraSurfaceView(this, mCamera);
+		mCamera = getCameraInstance();
+		cameraView = new CameraSurfaceView(this, mCamera);
 		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(cameraView);
+		mPictureCallback=new TakePictureCallback(this);
+		
+	}
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		setCommands();
+	}
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+	}
+	@Override
+	public void setCommands() {
+		// TODO Auto-generated method stub
+		voiceCommand=new VoiceCommand(CommandList);
+		mVoiceCommandListener.setCommands(voiceCommand);
 	}
 	
-	private class SpeechBroadcastReceiver extends BroadcastReceiver
-	{
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			// TODO Auto-generated method stub
-			String str=intent.getExtras().getString("Speech");
-			Log.d("Main broad", "broadcast:"+str);
-			if(str.equals("finish"))
-			{
-				Intent i=new Intent();
-				((CameraActivity)context).setResult(RESULT_OK);
-				((CameraActivity)context).finish();
-			}
-		}		
+	public static Camera getCameraInstance() {
+		Camera c = null;
+		try {
+			c = Camera.open(); // attempt to get a Camera instance
+		} catch (Exception e) {
+			// Camera is not available (in use or does not exist)
+			Log.d(tag, "error open camera");
+		}
+		return c; // returns null if camera is unavailable
 	}
 
-	public static Camera getCameraInstance(){
-	    Camera c = null;
-	    try {
-	        c = Camera.open(); // attempt to get a Camera instance
-	    }
-	    catch (Exception e){
-	        // Camera is not available (in use or does not exist)
-	    	Log.d(tag, "error open camera");
-	    }
-	    return c; // returns null if camera is unavailable
-	}
-	
-	private PictureCallback mPicture = new PictureCallback() {
-
-	    @Override
-	    public void onPictureTaken(byte[] data, Camera camera) {
-	    	Log.d(tag, "onPictureTaken");
-	        File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-	        if (pictureFile == null){
-	            Log.d(tag, "Error creating media file, check storage permissions: ");
-	            return;
-	        }
-
-	        try {
-	            FileOutputStream fos = new FileOutputStream(pictureFile);
-	            fos.write(data);
-	            fos.close();
-	        } catch (FileNotFoundException e) {
-	            Log.d(tag, "File not found: " + e.getMessage());
-	        } catch (IOException e) {
-	            Log.d(tag, "Error accessing file: " + e.getMessage());
-	        }
-	        Log.d(tag, "iiiiiiiiiiiii!!!!!!!!!");
-	        Uri uri=Uri.fromFile(pictureFile);
-	        Intent i=new Intent(CameraActivity.this,ImageViewer.class);
-	        i.putExtra("imgUri",uri.toString());
-	        startActivity(i);
-	    }	
-	};
-	
-	
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
-		if(mCamera==null)
-		{
-			mCamera=getCameraInstance();
+		if (mCamera == null) {
+			mCamera = getCameraInstance();
 		}
-		
 		mCamera.startPreview();
 		cameraView.setCamera(mCamera);
-		
-		if(receiver == null)
-		{
-			IntentFilter filter=new IntentFilter(SpeechCommandList.FILTER);
-			receiver=new SpeechBroadcastReceiver();
-			registerReceiver(receiver, filter);
-		}
 		super.onResume();
 	}
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
-		if(mCamera !=null)
-		{
-			//mCamera.setPreviewCallback(null);
+		if (mCamera != null) {
 			mCamera.stopPreview();
 			mCamera.release();
-			mCamera=null;
+			mCamera = null;
 		}
-		if( receiver != null)
-		{
+		if (receiver != null) {
 			unregisterReceiver(receiver);
-			receiver=null;
+			receiver = null;
 		}
 		super.onPause();
 	}
-	
-	private GestureDetector createGestureDetector(Context context) {
-	    GestureDetector gestureDetector = new GestureDetector(context);
-	        //Create a base listener for generic gestures
-	        gestureDetector.setBaseListener( new GestureDetector.BaseListener() {
-				
-				@Override
-				public boolean onGesture(Gesture gesture) {
-					// TODO Auto-generated method stub
-					if(gesture == Gesture.TAP)
-					{
-						Log.d(tag, "tap!!!!!!!!!");
-						mCamera.takePicture(null, null, mPicture);
-						
-					}
-					return false;
-				}
-					
-			});
-	        return gestureDetector;
+
+	@Override
+	public void onVoiceCommand(String command) {
+		// TODO Auto-generated method stub
+		if(command.equals("catch"))
+		{
+			mCamera.takePicture(null, null, mPictureCallback);
+		}
+		else if(command.equals("finish"))
+		{
+			setResult(RESULT_OK);
+			finish();
+		}
 	}
+
+	private GestureDetector createGestureDetector(Context context) {
+		GestureDetector gestureDetector = new GestureDetector(context);
+		// Create a base listener for generic gestures
+		gestureDetector.setBaseListener(new GestureDetector.BaseListener() {
+
+			@Override
+			public boolean onGesture(Gesture gesture) {
+				// TODO Auto-generated method stub
+				if (gesture == Gesture.TAP) {
+					Log.d(tag, "tap!!!!!!!!!");
+					mCamera.takePicture(null, null, mPictureCallback);
+
+				}
+				return false;
+			}
+
+		});
+		return gestureDetector;
+	}
+
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		// TODO Auto-generated method stub
 		Log.d(tag, "generic Event");
 		return mGestureDetector.onMotionEvent(event);
 	}
-	private static Uri getOutputMediaFileUri(int type){
-	      return Uri.fromFile(getOutputMediaFile(type));
-	}
 
-	/** Create a File for saving an image or video */
-	private static File getOutputMediaFile(int type){
-	    // To be safe, you should check that the SDCard is mounted
-	    // using Environment.getExternalStorageState() before doing this.
-
-	    File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-	              Environment.DIRECTORY_PICTURES), "MyCameraApp");
-	    // This location works best if you want the created images to be shared
-	    // between applications and persist after your app has been uninstalled.
-
-	    // Create the storage directory if it does not exist
-	    if (! mediaStorageDir.exists()){
-	        if (! mediaStorageDir.mkdirs()){
-	            Log.d("MyCameraApp", "failed to create directory");
-	            return null;
-	        }
-	    }
-
-	    // Create a media file name
-	    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-	    File mediaFile;
-	    if (type == MEDIA_TYPE_IMAGE){
-	        mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-	        "IMG_"+ timeStamp + ".jpg");
-	    } else if(type == MEDIA_TYPE_VIDEO) {
-	        mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-	        "VID_"+ timeStamp + ".mp4");
-	    } else {
-	        return null;
-	    }
-
-	    return mediaFile;
-	}
 }

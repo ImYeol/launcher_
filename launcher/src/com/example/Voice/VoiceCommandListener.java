@@ -34,8 +34,8 @@ public class VoiceCommandListener implements VoiceListener {
 
 	public void unBindService() {
 		if (mBound) {
-			
 			mVoiceActivity.unbindService(mConnection);
+			mService.ReSetCommands();
 			mBound = false;
 		}
 	}

@@ -1,71 +1,94 @@
 package com.example.Camera;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
-import com.example.Voice.VoiceActivity;
-
-import android.app.Activity;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+
+import com.example.Voice.VoiceActivity;
+import com.example.Voice.VoiceCommand;
+import com.example.launcher.R;
+import com.example.util.IntentBuilder;
 
 public class ImageViewer extends VoiceActivity {
 
 	private ImageView view;
 	private File imgFile;
 	private BroadcastReceiver receiver;
+	private Uri uri;
+	private List<String> CommandList=Arrays.asList("Upload","Delete","Finish");
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.image_viewer);
 		view = (ImageView)findViewById(R.id.imageView);
-		Uri uri=Uri.parse(getIntent().getExtras().getString("imgUri"));
-		imgFile=new File(uri.getPath());
+		String CacheKey=getIntent().getExtras().getString("CacheKey");
+		uri=Uri.parse(CacheKey);
+		
+		view.setImageBitmap(TakePictureCallback.getBitmap(CacheKey));
+/*		imgFile=new File(uri.getPath());
 		if(imgFile.exists()){
 		    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
 		    view.setImageBitmap(myBitmap);
-		}
-
-	}
-	
-	@Override
-	protected void onResume() {
-		// TODO Auto-generated method stub	
-		if(receiver == null)
-		{
-			IntentFilter filter=new IntentFilter(SpeechCommandList.FILTER);
-			receiver=new SpeechBroadcastReceiver();
-			registerReceiver(receiver, filter);
-		}
-		super.onResume();
+		}*/
+		
 	}
 	@Override
-	protected void onPause() {
+	protected void onStart() {
 		// TODO Auto-generated method stub
-		if( receiver != null)
+		super.onStart();
+		setCommands();
+	}
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+	}
+	@Override
+	public void onVoiceCommand(String command) {
+		// TODO Auto-generated method stub
+		if(command.equals("upload"))
 		{
-			unregisterReceiver(receiver);
-			receiver=null;
+			Intent intent=IntentBuilder.CreateIntent(this, ImageCommentDialog.class).setUri(uri.toString()).build();
+			IntentBuilder.startActivity(this, intent);
 		}
-		super.onPause();
+		else if(command.equals("delete"))
+		{
+			imgFile=new File(uri.getPath());
+			imgFile.delete();
+			finish();
+		}
+		else if(command.equals("finish"))
+		{
+			setResult(RESULT_OK);
+			finish();
+		}
+	}
+	@Override
+	public void setCommands() {
+		// TODO Auto-generated method stub
+		VoiceCommand voiceCommand=new VoiceCommand(CommandList);
+		mVoiceCommandListener.setCommands(voiceCommand);
+		
+	}
+	@Override
+	public void onAttachedToWindow() {
+		// TODO Auto-generated method stub
+		super.onAttachedToWindow();
+		openOptionsMenu();
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-			MenuItem item;
-			
-			item=menu.add("ok");
-		//	item.setIcon(an)
-			menu.add("delete");
+			for(String command : CommandList)
+				menu.add(command);
 		return true;
 	}
 	
@@ -74,11 +97,23 @@ public class ImageViewer extends VoiceActivity {
 		if (item.getItemId() == -1) {
 			return true;
 		}
-		if(item.getItemId() == 1)
+		else if(item.getItemId() == 0)
 		{
+			Intent intent=IntentBuilder.CreateIntent(this, ImageCommentDialog.class).setCacheKey(uri.toString()).build();
+			IntentBuilder.startActivityForResult(this, intent);
+		}
+		else if(item.getItemId() == 1)
+		{
+			imgFile=new File(uri.getPath());
 			imgFile.delete();
 			finish();
 		}
+		else if(item.getItemId() == 2)
+		{
+			setResult(RESULT_OK);
+			finish();
+		}
+		
 		return true;
 	}
 	
@@ -87,19 +122,4 @@ public class ImageViewer extends VoiceActivity {
 	    finish();
 	}
 	
-	private class SpeechBroadcastReceiver extends BroadcastReceiver
-	{
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			// TODO Auto-generated method stub
-			String str=intent.getExtras().getString("Speech");
-			Log.d("Main broad", "broadcast:"+str);
-			if(str.equals("finish"))
-			{
-				Intent i=new Intent();
-				((CameraActivity)context).setResult(RESULT_OK);
-				((CameraActivity)context).finish();
-			}
-		}		
-	}
 }
