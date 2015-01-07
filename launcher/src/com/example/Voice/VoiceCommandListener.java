@@ -1,26 +1,49 @@
 package com.example.Voice;
 
-import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.example.Voice.VoiceListenerService.VoiceListenerBinder;
 
 public class VoiceCommandListener implements VoiceListener {
 
-	private VoiceActivity mVoiceActivity;
-	private VoiceListenerService mService; // 연결 타입 서비스
-	private boolean mBound = false; // 서비스 연결 여부
+	private transient VoiceActivity mVoiceActivity;
+//	private VoiceListenerService mService; // 연결 타입 서비스
+	private transient boolean mBound = false; // 서비스 연결 여부
 	private VoiceCommand commands;
 
+	
+	public static final Parcelable.Creator<VoiceCommandListener> CREATOR
+    = new Parcelable.Creator<VoiceCommandListener>() {
+         public VoiceCommandListener createFromParcel(Parcel in){
+              return new VoiceCommandListener(in);
+         }
+
+         @Override
+         public VoiceCommandListener[] newArray(int size) {
+              return new VoiceCommandListener[size];
+         }
+    };
+    public VoiceCommandListener(Parcel in) {
+		// TODO Auto-generated constructor stub
+		readFromParcel(in);
+	}
+    
 	public VoiceCommandListener(VoiceActivity voiceActtivity) {
 		// TODO Auto-generated constructor stub
 		this.mVoiceActivity = voiceActtivity;
 		
 	}
-
+	private void readFromParcel(Parcel in) {
+		// TODO Auto-generated method stub
+		ClassLoader loader= VoiceCommand.class.getClassLoader();
+		in.readParcelable(loader);
+	}
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
@@ -77,4 +100,16 @@ public class VoiceCommandListener implements VoiceListener {
 		}
 
 	};
+
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		// TODO Auto-generated method stub
+		dest.writeParcelable(commands,0);
+	}
 }

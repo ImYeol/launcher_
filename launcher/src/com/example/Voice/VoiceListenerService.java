@@ -47,7 +47,12 @@ public class VoiceListenerService extends Service {
 	private VoiceCommand commands;
 	private AudioManager audio;
 	
-	public class VoiceListenerBinder extends Binder {
+/*	public class VoiceListenerBinder extends Binder {
+		VoiceListenerService getService() {
+			return VoiceListenerService.this;
+		}
+	}*/
+	public class VoiceListenerBinder extends IV {
 		VoiceListenerService getService() {
 			return VoiceListenerService.this;
 		}
@@ -107,7 +112,7 @@ public class VoiceListenerService extends Service {
 					target.mSpeechRecognizer
 							.startListening(target.mSpeechRecognizerIntent);
 					target.mIsListening = true;
-					//Log.d(TAG, "message start listening"); //$NON-NLS-1$
+					Log.d(tag, "message start listening"); //$NON-NLS-1$
 				}
 				break;
 
@@ -138,6 +143,7 @@ public class VoiceListenerService extends Service {
 		Message message = Message.obtain(null, MSG_RECOGNIZER_START_LISTENING);
 		try {
 			mServerMessenger.send(message);
+			Log.d(tag, "start msg");
 		} catch (RemoteException e) {
 			Log.d(tag, "On error send msg error");
 		}
@@ -203,6 +209,7 @@ public class VoiceListenerService extends Service {
 			if (mIsCountDownOn) {
 				mIsCountDownOn = false;
 				mNoSpeechCountDown.cancel();
+				Log.d(tag, "mIsCountDownOn "+mIsCountDownOn);
 			}
 			StartListening();
 		}

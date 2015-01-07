@@ -48,7 +48,9 @@
         </activity>
         <service 
             android:name="com.example.Voice.VoiceListenerService">
-            
+             <intent-filter >
+        		<action android:name="com.example.Voice.IVoiceListenerService" />
+   			 </intent-filter>
         </service>e
     </application>
 

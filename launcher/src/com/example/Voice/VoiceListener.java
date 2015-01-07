@@ -1,6 +1,8 @@
 package com.example.Voice;
 
-public interface VoiceListener {
+import android.os.Parcelable;
+
+public interface VoiceListener extends Parcelable{
 
 	public void onVoiceCommand(String command);
 	
