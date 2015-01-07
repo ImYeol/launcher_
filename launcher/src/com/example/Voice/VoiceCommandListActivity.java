@@ -2,9 +2,10 @@ package com.example.Voice;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageView;
+import android.util.Log;
 import android.widget.TextView;
 
+import com.example.Camera.CameraActivity;
 import com.example.launcher.R;
 import com.example.util.IntentBuilder;
 
@@ -18,24 +19,27 @@ public class VoiceCommandListActivity extends VoiceActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.voice_commands_list_layout);
 		tv=(TextView)findViewById(R.id.command_text);
-		startService(new Intent(this,VoiceListenerService.class));
+	
 	}
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
+		startService(new Intent(this,VoiceListenerService.class));
 		mVoiceCommandListener.BindService();
 	}
 	
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
+		Log.d(TAG, "onStop");
 		super.onStop();
 		mVoiceCommandListener.unBindService();
 	}
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
+		Log.d(TAG, "onDestroy");
 		super.onDestroy();
 		stopService(new Intent(this,VoiceListenerService.class));
 	}
@@ -52,7 +56,7 @@ public class VoiceCommandListActivity extends VoiceActivity {
 		if(command.contains("take a picture"))
 		{
 			tv.setText(command);
-			Intent intent=IntentBuilder.CreateIntent(this, ImageView.class).build();
+			Intent intent=IntentBuilder.CreateIntent(this, CameraActivity.class).build();
 			IntentBuilder.startActivity(this, intent);
 		}
 		else if(command.contains("finish"))

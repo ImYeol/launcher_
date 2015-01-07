@@ -7,24 +7,28 @@
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="19" />
-
+	<uses-feature android:name="android.hardware.camera" />
+	
+  <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.CAMERA" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@android:style/Theme.Translucent"> >
+        android:label="@string/app_name" >
         <activity
             android:name="com.example.launcher.MainActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="com.example.Voice.VoiceCommandListActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name="com.example.Voice.VoiceCommandListActivity"
-            android:label="@string/app_name" >
         </activity>
         <activity
             android:name="com.example.Camera.CameraActivity"
@@ -43,8 +47,7 @@
             android:label="@string/app_name" >
         </activity>
         <service 
-            android:name="com.example.Voice.VoiceListenerServic"
-            android:process=":remote">
+            android:name="com.example.Voice.VoiceListenerService">
             
         </service>e
     </application>

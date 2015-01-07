@@ -20,6 +20,7 @@ public final class R {
         public static final int comment_text=0x7f050001;
         public static final int file_transfer_progressbar=0x7f050008;
         public static final int imageView=0x7f050002;
+        public static final int progressBar1=0x7f05000a;
         public static final int text_menu_item1=0x7f050004;
         public static final int text_menu_item2=0x7f050005;
         public static final int text_menu_item3=0x7f050006;
@@ -33,6 +34,7 @@ public final class R {
         public static final int thumbnail_view=0x7f030003;
         public static final int transfer_dialog=0x7f030004;
         public static final int voice_commands_list_layout=0x7f030005;
+        public static final int voice_recognition_state_dialog=0x7f030006;
     }
     public static final class string {
         public static final int app_name=0x7f040000;

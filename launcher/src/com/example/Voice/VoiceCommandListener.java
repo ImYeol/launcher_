@@ -1,5 +1,6 @@
 package com.example.Voice;
 
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -49,6 +50,14 @@ public class VoiceCommandListener implements VoiceListener {
 		return true;
 	}
 	
+	public void onBeginSpeech()
+	{
+		mVoiceActivity.onBeginSpeech();
+	}
+	public void onEndOfSpeech()
+	{
+		mVoiceActivity.onEndOfSpeech();
+	}
 	private ServiceConnection mConnection = new ServiceConnection() {
 
 		@Override

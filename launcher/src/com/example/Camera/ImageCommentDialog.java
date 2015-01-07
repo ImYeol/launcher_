@@ -34,17 +34,20 @@ public class ImageCommentDialog extends VoiceActivity {
 		setContentView(R.layout.custom_dialog);
 		mGestureDetector=createGestureDetector(this);
 		commentView=(TextView)findViewById(R.id.comment_text);
+		commentView.setText("");
 		Uri=getIntent().getExtras().getString("Uri");
 	}
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
+		Log.d(TAG, command);
 		commentView.setText(command);
 	}
+
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
-		super.onPrepareOptionsMenu(menu);
+		//super.onCreateOptionsMenu(menu);
 		menu.add("Ok");
 		menu.add("Cancel");
 		return true;
@@ -52,16 +55,15 @@ public class ImageCommentDialog extends VoiceActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// TODO Auto-generated method stub
-		switch(item.getItemId())
+		if(item.getTitle().toString().equals("Ok"))
 		{
-		case 0:
 			Intent intent=IntentBuilder.CreateIntent(this, ImageTransferHelper.class).setUri(Uri).build();
 			IntentBuilder.startActivityForResult(this, intent);
-			break;
-		case 1:
+		}
+		else if(item.getTitle().toString().equals("Cancel"))
+		{
 			setResult(RESULT_OK);
 			finish();
-			break;
 		}
 		return true;
 	}

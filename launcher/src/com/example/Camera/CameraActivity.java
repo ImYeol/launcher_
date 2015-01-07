@@ -101,6 +101,7 @@ public class CameraActivity extends VoiceActivity {
 		} catch (Exception e) {
 			// Camera is not available (in use or does not exist)
 			Log.d(tag, "error open camera");
+			e.printStackTrace();
 		}
 		return c; // returns null if camera is unavailable
 	}

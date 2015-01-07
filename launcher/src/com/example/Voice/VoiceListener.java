@@ -7,4 +7,9 @@ public interface VoiceListener {
 	public boolean BindService();
 	
 	public void unBindService();
+	
+	public void onBeginSpeech();
+	
+	public void onEndOfSpeech();
+	
 }

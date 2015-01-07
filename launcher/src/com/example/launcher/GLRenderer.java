@@ -12,6 +12,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import com.example.Voice.VoiceActivity;
+import com.example.Voice.VoiceCommandListActivity;
+import com.example.Voice.VoiceListenerService;
 
 import android.app.Application;
 import android.content.BroadcastReceiver;
@@ -181,7 +183,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	}
 	public void performDoubleClick()
 	{
-		Intent i=new Intent(context,VoiceActivity.class);
+		Intent i=new Intent(context,VoiceCommandListActivity.class);
 		context.startActivity(i);
 	}
 	public void setOffset(float offset)

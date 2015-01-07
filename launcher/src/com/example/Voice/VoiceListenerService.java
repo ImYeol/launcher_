@@ -160,6 +160,7 @@ public class VoiceListenerService extends Service {
 
 	@Override
 	public void onDestroy() {
+		Log.d(tag, "onDestroy");
 		super.onDestroy();
 
 		if (mIsCountDownOn) {
@@ -172,7 +173,6 @@ public class VoiceListenerService extends Service {
 
 	protected class SpeechRecognitionListener implements RecognitionListener {
 		
-		ProgressDialog voiceRecoginitionDialog;
 		@Override
 		public void onBeginningOfSpeech() {
 			// speech input will be processed, so there is no need for count
@@ -181,9 +181,8 @@ public class VoiceListenerService extends Service {
 				mIsCountDownOn = false;
 				mNoSpeechCountDown.cancel();
 			}
-			voiceRecoginitionDialog=ProgressDialog.show(getApplicationContext(), null, null);
 			audio.playSoundEffect(Sounds.SUCCESS);
-			
+			mCallback.onBeginSpeech();
 			Log.d(tag, "onBeginingOfSpeech"); //$NON-NLS-1$
 		}
 
@@ -195,6 +194,7 @@ public class VoiceListenerService extends Service {
 		@Override
 		public void onEndOfSpeech() {
 			Log.d(tag, "onEndOfSpeech"); //$NON-NLS-1$
+			mCallback.onEndOfSpeech();
 		}
 
 		@Override
@@ -218,13 +218,11 @@ public class VoiceListenerService extends Service {
 					.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
-			Log.d(tag, "result " + str);
+		//	Log.d(tag, "par result " + str);
 
 			if (commands !=null && commands.contains(str)) {
 				mCallback.onVoiceCommand(str);
 				ReStartListening();
-				if(voiceRecoginitionDialog.isShowing())
-					voiceRecoginitionDialog.dismiss();
 			}
 
 		}
@@ -247,9 +245,9 @@ public class VoiceListenerService extends Service {
 			if (commands !=null && commands.contains(str)) {
 				mCallback.onVoiceCommand(str);
 			}
+			mCallback.onVoiceCommand(str);
 			ReStartListening();
-			if(voiceRecoginitionDialog.isShowing())
-				voiceRecoginitionDialog.dismiss();
+
 		}
 
 		@Override

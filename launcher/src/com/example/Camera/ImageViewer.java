@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -19,6 +20,7 @@ import com.example.util.IntentBuilder;
 
 public class ImageViewer extends VoiceActivity {
 
+	private final String TAG="ImageViewer";
 	private ImageView view;
 	private File imgFile;
 	private BroadcastReceiver receiver;
@@ -57,11 +59,13 @@ public class ImageViewer extends VoiceActivity {
 		// TODO Auto-generated method stub
 		if(command.equals("upload"))
 		{
-			Intent intent=IntentBuilder.CreateIntent(this, ImageCommentDialog.class).setUri(uri.toString()).build();
+			Log.d(TAG, "upload selected");
+			Intent intent=IntentBuilder.CreateIntent(ImageViewer.this, ImageCommentDialog.class).setUri(uri.toString()).build();
 			IntentBuilder.startActivity(this, intent);
 		}
 		else if(command.equals("delete"))
 		{
+			Log.d(TAG, "upload selected");
 			imgFile=new File(uri.getPath());
 			imgFile.delete();
 			finish();
@@ -88,38 +92,48 @@ public class ImageViewer extends VoiceActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 			for(String command : CommandList)
-				menu.add(command);
+			{
+				MenuItem item=menu.add(command);
+			/*	if(command.equals("Upload"))
+				{
+					Intent intent=new Intent(this,ImageCommentDialog.class);
+					intent.putExtra("CacheKey", getIntent().getExtras().getString("CacheKey"));
+					item.setIntent(intent);
+				}*/
+			}
 		return true;
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		
+		Log.d(TAG, "id:" + item.getItemId() + "title:"+ item.getTitle());
 		if (item.getItemId() == -1) {
 			return true;
 		}
-		else if(item.getItemId() == 0)
+		else if(item.getTitle().toString().equals("Upload"))
 		{
-			Intent intent=IntentBuilder.CreateIntent(this, ImageCommentDialog.class).setCacheKey(uri.toString()).build();
-			IntentBuilder.startActivityForResult(this, intent);
+			Log.d(TAG, "upload");
+			Intent intent=new Intent(ImageViewer.this,ImageCommentDialog.class);
+			intent.putExtra("CacheKey", uri.toString());
+			startActivityForResult(intent, 0);
+	//		Intent intent=IntentBuilder.CreateIntent(this, ImageCommentDialog.class).setCacheKey(uri.toString()).build();
+	//		IntentBuilder.startActivityForResult(this, intent);
 		}
-		else if(item.getItemId() == 1)
-		{
+		else if(item.getTitle().toString().equals("Delete"))
+		{	
+			Log.d(TAG, "delete");
 			imgFile=new File(uri.getPath());
 			imgFile.delete();
 			finish();
 		}
-		else if(item.getItemId() == 2)
+		else if(item.getTitle().toString().equals("Finish"))
 		{
+			Log.d(TAG, "finish");
 			setResult(RESULT_OK);
 			finish();
 		}
 		
 		return true;
 	}
-	
-	@Override
-	public void onOptionsMenuClosed(Menu menu) {
-	    finish();
-	}
-	
 }
