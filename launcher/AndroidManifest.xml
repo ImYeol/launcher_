@@ -13,6 +13,8 @@
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -47,11 +49,12 @@
             android:label="@string/app_name" >
         </activity>
         <service 
-            android:name="com.example.Voice.VoiceListenerService">
+            android:name="com.example.Voice.VoiceListenerService"
+            android:process=":remote">
              <intent-filter >
         		<action android:name="com.example.Voice.IVoiceListenerService" />
    			 </intent-filter>
-        </service>e
+        </service>
     </application>
 
 </manifest>

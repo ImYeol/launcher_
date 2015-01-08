@@ -26,7 +26,7 @@ public final class R {
         public static final int imageView3=0x7f050005;
         public static final int imageView4=0x7f050006;
         public static final int imageView5=0x7f050007;
-        public static final int progressBar1=0x7f050010;
+        public static final int recognition_state_progressbar=0x7f050010;
         public static final int text_menu_item1=0x7f05000a;
         public static final int text_menu_item2=0x7f05000b;
         public static final int text_menu_item3=0x7f05000c;

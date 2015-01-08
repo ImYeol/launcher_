@@ -41,7 +41,15 @@ public class ImageCommentDialog extends VoiceActivity {
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
 		Log.d(TAG, command);
-		commentView.setText(command);
+		final String cmd=command;
+		runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				commentView.setText(cmd);
+			}
+		});
 	}
 
 	@Override

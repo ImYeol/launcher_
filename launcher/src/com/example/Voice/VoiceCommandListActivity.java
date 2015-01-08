@@ -13,6 +13,7 @@ public class VoiceCommandListActivity extends VoiceActivity {
 
 	private static final String TAG = "VoiceCommandListActivity";
 	private TextView tv;
+	private boolean IsCommandRecognized=false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +26,9 @@ public class VoiceCommandListActivity extends VoiceActivity {
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
+		IsCommandRecognized=false;
 		startService(new Intent(this,VoiceListenerService.class));
+	//	startService(new Intent(IVoiceListenerService.class));
 		mVoiceCommandListener.BindService();
 	}
 	
@@ -53,21 +56,35 @@ public class VoiceCommandListActivity extends VoiceActivity {
 	
 	@Override
 	public void onVoiceCommand(String command) {
-		if(command.contains("take a picture"))
-		{
-			tv.setText(command);
-			Intent intent=IntentBuilder.CreateIntent(this, CameraActivity.class).build();
-			IntentBuilder.startActivity(this, intent);
-		}
-		else if(command.contains("finish"))
-		{
-			tv.setText(command);
-			this.finish();
-		}
-		else
-		{
-			tv.setText(command);
-		}
+		
+		if(IsCommandRecognized)
+			return ;
+		
+		final String cmd=command;
+		runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				if(cmd.contains("take a picture"))
+				{
+					IsCommandRecognized=true;
+					tv.setText(cmd);
+					Intent intent=IntentBuilder.CreateIntent(VoiceCommandListActivity.this, CameraActivity.class).build();
+					IntentBuilder.startActivity(VoiceCommandListActivity.this, intent);
+				}
+				else if(cmd.contains("finish"))
+				{
+					IsCommandRecognized=true;
+					tv.setText(cmd);
+					VoiceCommandListActivity.this.finish();
+				}
+				else
+				{
+					tv.setText(cmd);
+				}
+			}
+		});
 	}
 
 }

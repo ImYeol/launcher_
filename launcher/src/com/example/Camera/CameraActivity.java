@@ -125,10 +125,6 @@ public class CameraActivity extends VoiceActivity {
 			mCamera.release();
 			mCamera = null;
 		}
-		if (receiver != null) {
-			unregisterReceiver(receiver);
-			receiver = null;
-		}
 		super.onPause();
 	}
 

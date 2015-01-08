@@ -3,9 +3,12 @@ package com.example.Voice;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager.BadTokenException;
+import android.widget.ProgressBar;
 
 import com.example.launcher.R;
 
@@ -49,22 +52,45 @@ public class VoiceActivity extends Activity{
 		}
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.voice_recognition_state_dialog);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 		// dialog.setMessage(Message);
 		return dialog;
 	}
 
 	public void onBeginSpeech() {
-/*		if (voiceRecoginitionStateDialog == null) {
-			voiceRecoginitionStateDialog = createProgressDialog(this);
-			voiceRecoginitionStateDialog.show();
-		} else {
-			voiceRecoginitionStateDialog.show();
-		}*/
+		runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				if (voiceRecoginitionStateDialog == null) {
+					voiceRecoginitionStateDialog = VoiceActivity.this.createProgressDialog(VoiceActivity.this);
+					voiceRecoginitionStateDialog.show();
+					ProgressBar progressStateBar=(ProgressBar)voiceRecoginitionStateDialog.findViewById(R.id.recognition_state_progressbar);
+					progressStateBar.setVisibility(View.VISIBLE);
+				} else {
+					voiceRecoginitionStateDialog.show();
+				}
+			}
+		});
 	}
 
 	public void onEndOfSpeech() {
-		/*if (voiceRecoginitionStateDialog.isShowing())
-			voiceRecoginitionStateDialog.dismiss();*/
+		runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				if (voiceRecoginitionStateDialog.isShowing())
+				{
+				//	ProgressBar progressStateBar=(ProgressBar)findViewById(R.id.recognition_state_progressbar);
+				//	progressStateBar.setVisibility(View.GONE);
+					ProgressBar progressStateBar=(ProgressBar)voiceRecoginitionStateDialog.findViewById(R.id.recognition_state_progressbar);
+					progressStateBar.setVisibility(View.GONE);
+					voiceRecoginitionStateDialog.dismiss();
+				}
+			}
+		});
 	}
 	public void onVoiceCommand(String command)
 	{

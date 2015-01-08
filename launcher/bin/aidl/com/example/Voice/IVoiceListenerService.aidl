@@ -1,14 +1,14 @@
 package com.example.Voice;
 
 import com.example.Voice.VoiceCommand;
-import com.example.Voice.VoiceListener;
+import com.example.Voice.IVoiceListenerCallback;
 
 interface IVoiceListenerService{
 	void setCommands(in VoiceCommand commands);
 	
 	void ReSetCommands();
 	
-	void registerCallback(in VoiceListener callback);
+	void registerCallback(in IVoiceListenerCallback callback);
 	
 	void unRegisterCallback();
 }

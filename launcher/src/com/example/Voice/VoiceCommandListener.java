@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.RemoteException;
 
 import com.example.Voice.VoiceListenerService.VoiceListenerBinder;
 
@@ -16,7 +17,27 @@ public class VoiceCommandListener implements VoiceListener {
 //	private VoiceListenerService mService; // 연결 타입 서비스
 	private transient boolean mBound = false; // 서비스 연결 여부
 	private VoiceCommand commands;
-
+	private transient IVoiceListenerService mService;
+	private transient IVoiceListenerCallback mCallback=new IVoiceListenerCallback.Stub() {
+		
+		@Override
+		public void onVoiceCommand(String command) throws RemoteException {
+			// TODO Auto-generated method stub
+			mVoiceActivity.onVoiceCommand(command);
+		}
+		
+		@Override
+		public void onEndOfSpeech() throws RemoteException {
+			// TODO Auto-generated method stub
+			mVoiceActivity.onEndOfSpeech();
+		}
+		
+		@Override
+		public void onBeginSpeech() throws RemoteException {
+			// TODO Auto-generated method stub
+			mVoiceActivity.onBeginSpeech();
+		}
+	};
 	
 	public static final Parcelable.Creator<VoiceCommandListener> CREATOR
     = new Parcelable.Creator<VoiceCommandListener>() {
@@ -51,15 +72,22 @@ public class VoiceCommandListener implements VoiceListener {
 	}
 
 	public boolean BindService() {
-		Intent intent = new Intent(mVoiceActivity, VoiceListenerService.class);
+/*		Intent intent = new Intent(mVoiceActivity, VoiceListenerService.class);
 		return mVoiceActivity.bindService(intent, mConnection,
-				Context.BIND_AUTO_CREATE);
+				Context.BIND_AUTO_CREATE);*/
+		Intent intent=new Intent(IVoiceListenerService.class.getName());
+		return mVoiceActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
 
 	public void unBindService() {
 		if (mBound) {
 			mVoiceActivity.unbindService(mConnection);
-			mService.ReSetCommands();
+			try {
+				mService.ReSetCommands();
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			mBound = false;
 		}
 	}
@@ -69,7 +97,12 @@ public class VoiceCommandListener implements VoiceListener {
 		this.commands=commands;
 		if(mService == null)
 			return false;
-		mService.setCommands(commands);
+		try {
+			mService.setCommands(commands);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return true;
 	}
 	
@@ -86,16 +119,22 @@ public class VoiceCommandListener implements VoiceListener {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			// TODO Auto-generated method stub
-			VoiceListenerBinder binder = (VoiceListenerBinder) service;
-			mService = binder.getService();
+		//	VoiceListenerBinder binder = (VoiceListenerBinder) service;
+			mService=IVoiceListenerService.Stub.asInterface(service);
+		//	mService = binder.getService();
 			mBound = true;
 			
-			mService.registerCallback(VoiceCommandListener.this);
+			try {
+				mService.registerCallback(mCallback);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName arg0) {
-
+			mService=null;
 			mBound = false;
 		}
 

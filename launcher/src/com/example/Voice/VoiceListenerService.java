@@ -42,7 +42,7 @@ public class VoiceListenerService extends Service {
 	static final int MSG_RECOGNIZER_CANCEL = 2;
 
 	private final IBinder mBinder = new VoiceListenerBinder();
-	private VoiceListener mCallback;
+	private IVoiceListenerCallback mCallback;
 
 	private VoiceCommand commands;
 	private AudioManager audio;
@@ -52,9 +52,32 @@ public class VoiceListenerService extends Service {
 			return VoiceListenerService.this;
 		}
 	}*/
-	public class VoiceListenerBinder extends IV {
-		VoiceListenerService getService() {
-			return VoiceListenerService.this;
+	public class VoiceListenerBinder extends IVoiceListenerService.Stub {
+
+		@Override
+		public void setCommands(VoiceCommand commands) throws RemoteException {
+			// TODO Auto-generated method stub
+			VoiceListenerService.this.setCommands(commands);
+		}
+
+		@Override
+		public void ReSetCommands() throws RemoteException {
+			// TODO Auto-generated method stub
+			VoiceListenerService.this.ReSetCommands();
+		}
+
+		@Override
+		public void registerCallback(IVoiceListenerCallback callback)
+				throws RemoteException {
+			// TODO Auto-generated method stub
+			Log.d(tag ,"registerCallback");
+			VoiceListenerService.this.registerCallback(callback);
+		}
+
+		@Override
+		public void unRegisterCallback() throws RemoteException {
+			// TODO Auto-generated method stub
+			VoiceListenerService.this.unRegisterCallback();
 		}
 	}
 
@@ -64,8 +87,12 @@ public class VoiceListenerService extends Service {
 		return mBinder;
 	}
 
-	public void registerCallback(VoiceListener callback) {
+	public void registerCallback(IVoiceListenerCallback callback) {
 		this.mCallback = callback;
+	}
+	public void unRegisterCallback()
+	{
+		this.mCallback = null;
 	}
 	@Override
 	public void onCreate() {
@@ -112,7 +139,7 @@ public class VoiceListenerService extends Service {
 					target.mSpeechRecognizer
 							.startListening(target.mSpeechRecognizerIntent);
 					target.mIsListening = true;
-					Log.d(tag, "message start listening"); //$NON-NLS-1$
+			//		Log.d(tag, "message start listening"); //$NON-NLS-1$
 				}
 				break;
 
@@ -143,7 +170,7 @@ public class VoiceListenerService extends Service {
 		Message message = Message.obtain(null, MSG_RECOGNIZER_START_LISTENING);
 		try {
 			mServerMessenger.send(message);
-			Log.d(tag, "start msg");
+	//		Log.d(tag, "start msg");
 		} catch (RemoteException e) {
 			Log.d(tag, "On error send msg error");
 		}
@@ -188,7 +215,12 @@ public class VoiceListenerService extends Service {
 				mNoSpeechCountDown.cancel();
 			}
 			audio.playSoundEffect(Sounds.SUCCESS);
-			mCallback.onBeginSpeech();
+			try {
+				mCallback.onBeginSpeech();
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			Log.d(tag, "onBeginingOfSpeech"); //$NON-NLS-1$
 		}
 
@@ -200,7 +232,12 @@ public class VoiceListenerService extends Service {
 		@Override
 		public void onEndOfSpeech() {
 			Log.d(tag, "onEndOfSpeech"); //$NON-NLS-1$
-			mCallback.onEndOfSpeech();
+			try {
+				mCallback.onEndOfSpeech();
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		@Override
@@ -226,9 +263,13 @@ public class VoiceListenerService extends Service {
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
 		//	Log.d(tag, "par result " + str);
-
-			if (commands !=null && commands.contains(str)) {
-				mCallback.onVoiceCommand(str);
+			if(commands == null)
+			{
+				onVoiceCommand(str);
+			}
+			else if (commands !=null && commands.contains(str)) {
+				
+				onVoiceCommand(str);
 				ReStartListening();
 			}
 
@@ -249,18 +290,33 @@ public class VoiceListenerService extends Service {
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
 			Log.d(tag, "result " + str);
-			if (commands !=null && commands.contains(str)) {
-				mCallback.onVoiceCommand(str);
+
+			if(commands == null)
+			{
+				onVoiceCommand(str);
+				ReStartListening();
 			}
-			mCallback.onVoiceCommand(str);
-			ReStartListening();
+			else if(commands !=null && commands.contains(str))
+			{
+				onVoiceCommand(str);
+				ReStartListening();
+			}
 
 		}
 
 		@Override
 		public void onRmsChanged(float rmsdB) {
 		}
-
+		
+		private void onVoiceCommand(String str)
+		{
+			try {
+				mCallback.onVoiceCommand(str);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void ReSetCommands() {
