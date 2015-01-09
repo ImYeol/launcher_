@@ -44,15 +44,31 @@ public class ImageViewer extends VoiceActivity {
 		
 	}
 	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		setCommands();
+	}
+	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		setCommands();
+	//	setCommands();
 	}
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+	}
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		if(resultCode == RESULT_OK)
+		{
+			setResult(RESULT_OK);
+			finish();
+		}
 	}
 	@Override
 	public void onVoiceCommand(String command) {
@@ -61,7 +77,7 @@ public class ImageViewer extends VoiceActivity {
 		{
 			Log.d(TAG, "upload selected");
 			Intent intent=IntentBuilder.CreateIntent(ImageViewer.this, ImageCommentDialog.class).setUri(uri.toString()).build();
-			IntentBuilder.startActivity(this, intent);
+			IntentBuilder.startActivityForResult(ImageViewer.this, intent);
 		}
 		else if(command.equals("delete"))
 		{
@@ -115,7 +131,7 @@ public class ImageViewer extends VoiceActivity {
 		{
 			Log.d(TAG, "upload");
 			Intent intent=new Intent(ImageViewer.this,ImageCommentDialog.class);
-			intent.putExtra("CacheKey", uri.toString());
+			intent.putExtra("Uri", uri.toString());
 			startActivityForResult(intent, 0);
 	//		Intent intent=IntentBuilder.CreateIntent(this, ImageCommentDialog.class).setCacheKey(uri.toString()).build();
 	//		IntentBuilder.startActivityForResult(this, intent);

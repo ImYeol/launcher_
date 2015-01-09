@@ -51,7 +51,7 @@ public class ImageTransferHelper extends Activity {
 
 		Intent intent = getIntent();
 		uri = intent.getExtras().getString("Uri");
-
+		comment=intent.getExtras().getString("comment");
 		if (mBluetoothAdapter == null) {
 			Log.v(TAG, "Device does not support Bluetooth");
 		} else {
@@ -212,9 +212,19 @@ public class ImageTransferHelper extends Activity {
 			ByteArrayInputStream bais = new ByteArrayInputStream(imageByte);
 			try {
 				bytesRead = 0;
-				byte[] commentByte=comment.getBytes();
+				byte[] flagByte=new byte[1];
+				flagByte[0]=0;
+				mOutStream.write(flagByte);
+				mOutStream.flush();
+				
+				byte[] commentByte=comment.getBytes("UTF-8");
 				
 				mOutStream.write(commentByte);
+				mOutStream.flush();
+				
+				flagByte[0]=1;
+				
+				mOutStream.write(flagByte);
 				mOutStream.flush();
 				
 				while ((len = bais.read(sendByte)) != -1) {
@@ -230,9 +240,9 @@ public class ImageTransferHelper extends Activity {
 					}
 					 mOutStream.flush();
 				}
-				byte[] end=new byte[1];
-				end[0]=0;
-				mOutStream.write(end);
+				flagByte[0]=2;
+				
+				mOutStream.write(flagByte);
 				mOutStream.flush();
 				mOutStream.close();
 

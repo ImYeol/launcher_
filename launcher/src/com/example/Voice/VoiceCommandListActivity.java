@@ -20,24 +20,28 @@ public class VoiceCommandListActivity extends VoiceActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.voice_commands_list_layout);
 		tv=(TextView)findViewById(R.id.command_text);
-	
+		startService(new Intent(this,VoiceListenerService.class));
 	}
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
 		IsCommandRecognized=false;
-		startService(new Intent(this,VoiceListenerService.class));
+	//	startService(new Intent(this,VoiceListenerService.class));
 	//	startService(new Intent(IVoiceListenerService.class));
-		mVoiceCommandListener.BindService();
+	//	mVoiceCommandListener.BindService();
 	}
-	
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+	}
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		Log.d(TAG, "onStop");
 		super.onStop();
-		mVoiceCommandListener.unBindService();
+	//	mVoiceCommandListener.unBindService();
 	}
 	@Override
 	protected void onDestroy() {

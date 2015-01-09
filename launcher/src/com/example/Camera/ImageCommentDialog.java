@@ -25,6 +25,7 @@ public class ImageCommentDialog extends VoiceActivity {
 	private final String TAG="ImageCommentDialog";
 	private TextView commentView;
 	private String Uri;
+	private String comment;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,7 @@ public class ImageCommentDialog extends VoiceActivity {
 			}
 		});
 	}
-
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
@@ -65,7 +66,9 @@ public class ImageCommentDialog extends VoiceActivity {
 		// TODO Auto-generated method stub
 		if(item.getTitle().toString().equals("Ok"))
 		{
-			Intent intent=IntentBuilder.CreateIntent(this, ImageTransferHelper.class).setUri(Uri).build();
+			comment=commentView.getText().toString();
+			Intent intent=IntentBuilder.CreateIntent(this, ImageTransferHelper.class).setUri(Uri)
+															.setComment(comment).build();
 			IntentBuilder.startActivityForResult(this, intent);
 		}
 		else if(item.getTitle().toString().equals("Cancel"))
@@ -85,6 +88,11 @@ public class ImageCommentDialog extends VoiceActivity {
 				// TODO Auto-generated method stub
 				if (gesture == Gesture.TAP) {
 					openOptionsMenu();
+				}
+				if (gesture == Gesture.SWIPE_DOWN)
+				{
+					setResult(RESULT_OK);
+					finish();
 				}
 				return false;
 			}

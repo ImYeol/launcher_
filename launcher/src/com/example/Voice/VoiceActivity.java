@@ -29,14 +29,25 @@ public class VoiceActivity extends Activity{
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
+	//	mVoiceCommandListener.BindService();
+	}
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
 		mVoiceCommandListener.BindService();
 	}
-	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		mVoiceCommandListener.unBindService();
+	}
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
-		mVoiceCommandListener.unBindService();
+	//	mVoiceCommandListener.unBindService();
 	}
 	
 	protected void SetOnVoiceCommandListener() {
@@ -58,7 +69,7 @@ public class VoiceActivity extends Activity{
 	}
 
 	public void onBeginSpeech() {
-		runOnUiThread(new Runnable() {
+	/*	runOnUiThread(new Runnable() {
 			
 			@Override
 			public void run() {
@@ -72,11 +83,11 @@ public class VoiceActivity extends Activity{
 					voiceRecoginitionStateDialog.show();
 				}
 			}
-		});
+		});*/
 	}
 
 	public void onEndOfSpeech() {
-		runOnUiThread(new Runnable() {
+	/*	runOnUiThread(new Runnable() {
 			
 			@Override
 			public void run() {
@@ -90,7 +101,7 @@ public class VoiceActivity extends Activity{
 					voiceRecoginitionStateDialog.dismiss();
 				}
 			}
-		});
+		});*/
 	}
 	public void onVoiceCommand(String command)
 	{

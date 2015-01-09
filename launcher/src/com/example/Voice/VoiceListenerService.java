@@ -109,6 +109,7 @@ public class VoiceListenerService extends Service {
 		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
 		mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
 		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
+		
 	}
 
 	@Override
@@ -226,7 +227,7 @@ public class VoiceListenerService extends Service {
 
 		@Override
 		public void onBufferReceived(byte[] buffer) {
-
+			Log.d(tag, "onBufferReceived");
 		}
 
 		@Override
@@ -253,7 +254,7 @@ public class VoiceListenerService extends Service {
 
 		@Override
 		public void onEvent(int eventType, Bundle params) {
-
+			Log.d(tag, "onEvent");
 		}
 
 		@Override

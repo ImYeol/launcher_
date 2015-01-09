@@ -80,7 +80,7 @@ public class CameraActivity extends VoiceActivity {
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		setCommands();
+	//	setCommands();
 	}
 	@Override
 	protected void onStop() {
@@ -115,6 +115,8 @@ public class CameraActivity extends VoiceActivity {
 		mCamera.startPreview();
 		cameraView.setCamera(mCamera);
 		super.onResume();
+		
+		setCommands();
 	}
 
 	@Override
