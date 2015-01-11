@@ -20,7 +20,7 @@ public class VoiceCommandListActivity extends VoiceActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.voice_commands_list_layout);
 		tv=(TextView)findViewById(R.id.command_text);
-		startService(new Intent(this,VoiceListenerService.class));
+	//	startService(new Intent(this,VoiceListenerService.class));
 	}
 	@Override
 	protected void onStart() {
@@ -35,6 +35,7 @@ public class VoiceCommandListActivity extends VoiceActivity {
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		tv.setText("");
 	}
 	@Override
 	protected void onStop() {
@@ -42,13 +43,6 @@ public class VoiceCommandListActivity extends VoiceActivity {
 		Log.d(TAG, "onStop");
 		super.onStop();
 	//	mVoiceCommandListener.unBindService();
-	}
-	@Override
-	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		Log.d(TAG, "onDestroy");
-		super.onDestroy();
-		stopService(new Intent(this,VoiceListenerService.class));
 	}
 /*	public void setCommands()
 	{
@@ -65,20 +59,24 @@ public class VoiceCommandListActivity extends VoiceActivity {
 			return ;
 		
 		final String cmd=command;
-		runOnUiThread(new Runnable() {
+	//	runOnUiThread(new Runnable() {
 			
-			@Override
-			public void run() {
+//			@Override
+//			public void run() {
 				// TODO Auto-generated method stub
-				if(cmd.contains("take a picture"))
+				if(cmd.contains("camera"))
 				{
 					IsCommandRecognized=true;
 					tv.setText(cmd);
+					//mSpeechRecognizer.destroy();
+					//mSpeechRecognizer = null;
+					StopListening();
 					Intent intent=IntentBuilder.CreateIntent(VoiceCommandListActivity.this, CameraActivity.class).build();
 					IntentBuilder.startActivity(VoiceCommandListActivity.this, intent);
 				}
 				else if(cmd.contains("finish"))
 				{
+					StopListening();
 					IsCommandRecognized=true;
 					tv.setText(cmd);
 					VoiceCommandListActivity.this.finish();
@@ -87,8 +85,8 @@ public class VoiceCommandListActivity extends VoiceActivity {
 				{
 					tv.setText(cmd);
 				}
-			}
-		});
+//			}
+//		});
 	}
 
 }

@@ -8,7 +8,7 @@ import android.os.Parcelable;
 
 public class VoiceCommand implements Parcelable{
 
-	private List<String> commands;
+	public List<String> commands;
 	
 	public static final Parcelable.Creator<VoiceCommand> CREATOR
     = new Parcelable.Creator<VoiceCommand>() {

@@ -60,7 +60,7 @@ public class CameraActivity extends VoiceActivity {
 	public static final int MEDIA_TYPE_VIDEO = 2;
 	private BroadcastReceiver receiver;
 
-	private List<String> CommandList=Arrays.asList("Catch","finish");
+	private List<String> CommandList=Arrays.asList("catch","finish");
 	private VoiceCommand voiceCommand;
 	private TakePictureCallback mPictureCallback;
 	
@@ -74,7 +74,8 @@ public class CameraActivity extends VoiceActivity {
 		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(cameraView);
 		mPictureCallback=new TakePictureCallback(this);
-		
+		voiceCommand=new VoiceCommand(CommandList);
+		setCommands(voiceCommand);
 	}
 	@Override
 	protected void onStart() {
@@ -86,13 +87,14 @@ public class CameraActivity extends VoiceActivity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+		Log.d(tag, "onStop");
 	}
-	@Override
+/*	@Override
 	public void setCommands() {
 		// TODO Auto-generated method stub
 		voiceCommand=new VoiceCommand(CommandList);
 		mVoiceCommandListener.setCommands(voiceCommand);
-	}
+	} */
 	
 	public static Camera getCameraInstance() {
 		Camera c = null;
@@ -116,7 +118,6 @@ public class CameraActivity extends VoiceActivity {
 		cameraView.setCamera(mCamera);
 		super.onResume();
 		
-		setCommands();
 	}
 
 	@Override
@@ -135,10 +136,13 @@ public class CameraActivity extends VoiceActivity {
 		// TODO Auto-generated method stub
 		if(command.equals("catch"))
 		{
+			Log.d(tag, "catch");
+			StopListening();
 			mCamera.takePicture(null, null, mPictureCallback);
 		}
 		else if(command.equals("finish"))
 		{
+			StopListening();
 			setResult(RESULT_OK);
 			finish();
 		}
@@ -154,6 +158,7 @@ public class CameraActivity extends VoiceActivity {
 				// TODO Auto-generated method stub
 				if (gesture == Gesture.TAP) {
 					Log.d(tag, "tap!!!!!!!!!");
+					StopListening();
 					mCamera.takePicture(null, null, mPictureCallback);
 
 				}

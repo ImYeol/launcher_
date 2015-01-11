@@ -43,16 +43,21 @@ public class ImageCommentDialog extends VoiceActivity {
 		// TODO Auto-generated method stub
 		Log.d(TAG, command);
 		final String cmd=command;
-		runOnUiThread(new Runnable() {
+//		runOnUiThread(new Runnable() {
 			
-			@Override
-			public void run() {
+//			@Override
+//			public void run() {
 				// TODO Auto-generated method stub
 				commentView.setText(cmd);
-			}
-		});
+//			}
+//		});
 	}
-	
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		setCommands(null);
+	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
@@ -60,6 +65,16 @@ public class ImageCommentDialog extends VoiceActivity {
 		menu.add("Ok");
 		menu.add("Cancel");
 		return true;
+	}
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		if(resultCode == RESULT_OK)
+		{
+			setResult(RESULT_OK);
+			finish();
+		}
 	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

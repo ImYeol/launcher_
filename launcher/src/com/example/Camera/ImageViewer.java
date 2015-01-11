@@ -25,7 +25,7 @@ public class ImageViewer extends VoiceActivity {
 	private File imgFile;
 	private BroadcastReceiver receiver;
 	private Uri uri;
-	private List<String> CommandList=Arrays.asList("Upload","Delete","Finish");
+	private List<String> CommandList=Arrays.asList("upload","delete","finish");
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -47,7 +47,8 @@ public class ImageViewer extends VoiceActivity {
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		setCommands();
+		VoiceCommand voiceCommand=new VoiceCommand(CommandList);
+		setCommands(voiceCommand);
 	}
 	@Override
 	protected void onStart() {
@@ -75,6 +76,8 @@ public class ImageViewer extends VoiceActivity {
 		// TODO Auto-generated method stub
 		if(command.equals("upload"))
 		{
+			mSpeechRecognizer.destroy();
+			mSpeechRecognizer = null;
 			Log.d(TAG, "upload selected");
 			Intent intent=IntentBuilder.CreateIntent(ImageViewer.this, ImageCommentDialog.class).setUri(uri.toString()).build();
 			IntentBuilder.startActivityForResult(ImageViewer.this, intent);
@@ -92,13 +95,13 @@ public class ImageViewer extends VoiceActivity {
 			finish();
 		}
 	}
-	@Override
+/*	@Override
 	public void setCommands() {
 		// TODO Auto-generated method stub
 		VoiceCommand voiceCommand=new VoiceCommand(CommandList);
 		mVoiceCommandListener.setCommands(voiceCommand);
 		
-	}
+	}*/
 	@Override
 	public void onAttachedToWindow() {
 		// TODO Auto-generated method stub
@@ -127,8 +130,10 @@ public class ImageViewer extends VoiceActivity {
 		if (item.getItemId() == -1) {
 			return true;
 		}
-		else if(item.getTitle().toString().equals("Upload"))
+		else if(item.getTitle().toString().equals("upload"))
 		{
+			mSpeechRecognizer.destroy();
+			mSpeechRecognizer = null;
 			Log.d(TAG, "upload");
 			Intent intent=new Intent(ImageViewer.this,ImageCommentDialog.class);
 			intent.putExtra("Uri", uri.toString());
@@ -136,14 +141,14 @@ public class ImageViewer extends VoiceActivity {
 	//		Intent intent=IntentBuilder.CreateIntent(this, ImageCommentDialog.class).setCacheKey(uri.toString()).build();
 	//		IntentBuilder.startActivityForResult(this, intent);
 		}
-		else if(item.getTitle().toString().equals("Delete"))
+		else if(item.getTitle().toString().equals("delete"))
 		{	
 			Log.d(TAG, "delete");
 			imgFile=new File(uri.getPath());
 			imgFile.delete();
 			finish();
 		}
-		else if(item.getTitle().toString().equals("Finish"))
+		else if(item.getTitle().toString().equals("finish"))
 		{
 			Log.d(TAG, "finish");
 			setResult(RESULT_OK);

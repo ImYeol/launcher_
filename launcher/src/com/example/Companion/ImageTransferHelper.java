@@ -217,7 +217,7 @@ public class ImageTransferHelper extends Activity {
 				mOutStream.write(flagByte);
 				mOutStream.flush();
 				
-				byte[] commentByte=comment.getBytes("UTF-8");
+				byte[] commentByte=comment.getBytes();
 				
 				mOutStream.write(commentByte);
 				mOutStream.flush();
@@ -249,6 +249,13 @@ public class ImageTransferHelper extends Activity {
 			} catch (IOException e) {
 				Log.e(TAG, e.getMessage());
 			}
+			runOnUiThread(new Runnable() {
+				public void run() {
+					TakePictureCallback.resetBitmap(uri);
+					ImageTransferHelper.this.setResult(RESULT_OK);
+					ImageTransferHelper.this.finish();
+				}
+			});
 		}
 	}
 }
