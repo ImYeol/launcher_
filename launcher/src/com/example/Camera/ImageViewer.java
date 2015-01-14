@@ -25,7 +25,7 @@ public class ImageViewer extends VoiceActivity {
 	private File imgFile;
 	private BroadcastReceiver receiver;
 	private Uri uri;
-	private List<String> CommandList=Arrays.asList("upload","delete","finish");
+	private List<String> CommandList=Arrays.asList("send","delete","finish");
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -60,6 +60,7 @@ public class ImageViewer extends VoiceActivity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+		TakePictureCallback.resetBitmap(uri.toString());
 	}
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -74,17 +75,16 @@ public class ImageViewer extends VoiceActivity {
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
-		if(command.equals("upload"))
+		if(command.equals("send"))
 		{
-			mSpeechRecognizer.destroy();
-			mSpeechRecognizer = null;
-			Log.d(TAG, "upload selected");
+			StopListening();
+			Log.d(TAG, "send selected");
 			Intent intent=IntentBuilder.CreateIntent(ImageViewer.this, ImageCommentDialog.class).setUri(uri.toString()).build();
 			IntentBuilder.startActivityForResult(ImageViewer.this, intent);
 		}
 		else if(command.equals("delete"))
 		{
-			Log.d(TAG, "upload selected");
+			Log.d(TAG, "send selected");
 			imgFile=new File(uri.getPath());
 			imgFile.delete();
 			finish();
@@ -113,7 +113,7 @@ public class ImageViewer extends VoiceActivity {
 			for(String command : CommandList)
 			{
 				MenuItem item=menu.add(command);
-			/*	if(command.equals("Upload"))
+			/*	if(command.equals("send"))
 				{
 					Intent intent=new Intent(this,ImageCommentDialog.class);
 					intent.putExtra("CacheKey", getIntent().getExtras().getString("CacheKey"));
@@ -130,11 +130,10 @@ public class ImageViewer extends VoiceActivity {
 		if (item.getItemId() == -1) {
 			return true;
 		}
-		else if(item.getTitle().toString().equals("upload"))
+		else if(item.getTitle().toString().equals("send"))
 		{
-			mSpeechRecognizer.destroy();
-			mSpeechRecognizer = null;
-			Log.d(TAG, "upload");
+			StopListening();
+			Log.d(TAG, "send");
 			Intent intent=new Intent(ImageViewer.this,ImageCommentDialog.class);
 			intent.putExtra("Uri", uri.toString());
 			startActivityForResult(intent, 0);

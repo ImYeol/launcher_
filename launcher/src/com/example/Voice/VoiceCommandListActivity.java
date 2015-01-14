@@ -1,5 +1,8 @@
 package com.example.Voice;
 
+import java.util.Arrays;
+import java.util.List;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,11 +18,15 @@ public class VoiceCommandListActivity extends VoiceActivity {
 	private TextView tv;
 	private boolean IsCommandRecognized=false;
 
+	private VoiceCommand cmd;
+	private List<String> cmdList=Arrays.asList("camera","finish");
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.voice_commands_list_layout);
 		tv=(TextView)findViewById(R.id.command_text);
+		cmd=new VoiceCommand(cmdList);
+		setCommands(cmd);
 	//	startService(new Intent(this,VoiceListenerService.class));
 	}
 	@Override
@@ -71,6 +78,8 @@ public class VoiceCommandListActivity extends VoiceActivity {
 					//mSpeechRecognizer.destroy();
 					//mSpeechRecognizer = null;
 					StopListening();
+					//stoplisten();
+					Log.d(TAG, "onVoice: "+command);
 					Intent intent=IntentBuilder.CreateIntent(VoiceCommandListActivity.this, CameraActivity.class).build();
 					IntentBuilder.startActivity(VoiceCommandListActivity.this, intent);
 				}

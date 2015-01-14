@@ -16,37 +16,25 @@
 
 package com.example.Camera;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.speech.SpeechRecognizer;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.FrameLayout;
+
 import com.example.Voice.VoiceActivity;
 import com.example.Voice.VoiceCommand;
 import com.example.launcher.R;
-import com.google.android.glass.content.Intents;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
+import com.google.android.glass.widget.CardBuilder;
 
 public class CameraActivity extends VoiceActivity {
 
@@ -63,24 +51,32 @@ public class CameraActivity extends VoiceActivity {
 	private List<String> CommandList=Arrays.asList("catch","finish");
 	private VoiceCommand voiceCommand;
 	private TakePictureCallback mPictureCallback;
+	private View guideView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.camera);
 		mGestureDetector = createGestureDetector(this);
-		mCamera = getCameraInstance();
-		cameraView = new CameraSurfaceView(this, mCamera);
+	//	mCamera = getCameraInstance();
+		cameraView = new CameraSurfaceView(this);
+		guideView = new CardBuilder(this, CardBuilder.Layout.MENU)
+	    .setFootnote("say catch")
+	    .getView();
 		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(cameraView);
+		preview.addView(guideView);
+		guideView.bringToFront();
 		mPictureCallback=new TakePictureCallback(this);
 		voiceCommand=new VoiceCommand(CommandList);
 		setCommands(voiceCommand);
+		Log.d(tag, "onCreate");
 	}
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
+		Log.d(tag, "onStart");
 	//	setCommands();
 	}
 	@Override
@@ -114,6 +110,7 @@ public class CameraActivity extends VoiceActivity {
 		if (mCamera == null) {
 			mCamera = getCameraInstance();
 		}
+		
 		mCamera.startPreview();
 		cameraView.setCamera(mCamera);
 		super.onResume();
@@ -123,6 +120,7 @@ public class CameraActivity extends VoiceActivity {
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
+		Log.d(tag, "onPause");
 		if (mCamera != null) {
 			mCamera.stopPreview();
 			mCamera.release();
@@ -136,7 +134,7 @@ public class CameraActivity extends VoiceActivity {
 		// TODO Auto-generated method stub
 		if(command.equals("catch"))
 		{
-			Log.d(tag, "catch");
+			Log.d(tag, "onVoiceCommand: catch");
 			StopListening();
 			mCamera.takePicture(null, null, mPictureCallback);
 		}

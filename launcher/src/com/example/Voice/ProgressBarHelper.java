@@ -20,20 +20,18 @@ public class ProgressBarHelper {
 	private volatile Thread progressBarThread;
 	private int CurrentPosition=0;
 	private AudioManager audio;
+	private int size;
 	
-	public ProgressBarHelper() {
+	public ProgressBarHelper(ProgressBar pb,int size) {
 		// TODO Auto-generated constructor stub
-//		super.onCreate(savedInstanceState);
-//		setContentView(R.layout.voice_layout);
-//		tv=(TextView)findViewById(R.id.textView);
-//		pb=(ProgressBar)findViewById(R.id.progressBar);
-		pb.setVisibility(ProgressBar.GONE);
+		this.pb=pb;
+		this.size=size;
+		this.pb.setVisibility(ProgressBar.GONE);
 		start=System.currentTimeMillis();
 	}
 	public void startProgressBarThread()
 	{
 		pb.setVisibility(ProgressBar.VISIBLE);
-		audio.playSoundEffect(Sounds.SUCCESS);
 		if(progressBarThread == null)
 		{
 			progressBarThread=new Thread(null,backgroundThread);
@@ -49,6 +47,7 @@ public class ProgressBarHelper {
 			progressBarThread=null;
 			tmpThread.interrupt();
 		}
+		audio.playSoundEffect(Sounds.SUCCESS);
 		pb.setVisibility(ProgressBar.GONE);
 	}
 	private Runnable backgroundThread = new Runnable(){
@@ -71,13 +70,14 @@ public class ProgressBarHelper {
 		}
 		Handler progressBarHandle=new Handler()
 		{
+			private int size;
+			public void init()
+			{
+				size=0;
+			}
 			public void handleMessage(android.os.Message msg) {
-				CurrentPosition++;
-				pb.setProgress(CurrentPosition);
-				if(CurrentPosition == 100)
-				{
-					CurrentPosition=0;
-				}
+				size+=msg.what;
+				
 			}
 		};
 	};

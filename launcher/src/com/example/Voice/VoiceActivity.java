@@ -45,6 +45,7 @@ public class VoiceActivity extends Activity{
 	static final int MSG_RECOGNIZER_CANCEL = 2;
 	private VoiceCommand commands;
 	private AudioManager audio;
+	private boolean IsCommandRecognized=false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +59,10 @@ public class VoiceActivity extends Activity{
 				RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
 				"en-US");
-		mSpeechRecognizerIntent.putExtra(
-				RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+//		mSpeechRecognizerIntent.putExtra(
+	//			RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
-		mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
+	//	mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
 		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 	}
 	
@@ -87,10 +88,10 @@ public class VoiceActivity extends Activity{
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
-	/*	if (mSpeechRecognizer != null) {
+		if (mSpeechRecognizer != null) {
 			mSpeechRecognizer.destroy();
 			mSpeechRecognizer = null;
-		}*/
+		}
 	
 	}
 	public static ProgressDialog createProgressDialog(Context mContext) {
@@ -115,7 +116,10 @@ public class VoiceActivity extends Activity{
 	public void setCommands(VoiceCommand commands) {
 		this.commands = commands;
 	}
-
+	public void onResultOfSpeech()
+	{
+		
+	}
 	protected static class IncomingHandler extends Handler {
 		private WeakReference<VoiceActivity> mtarget;
 
@@ -141,7 +145,7 @@ public class VoiceActivity extends Activity{
 			case MSG_RECOGNIZER_CANCEL:
 				target.mSpeechRecognizer.cancel();
 				target.mIsListening = false;
-				//Log.d(TAG, "message canceled recognizer"); //$NON-NLS-1$
+				Log.d(TAG, "message canceled recognizer"); //$NON-NLS-1$
 				break;
 			}
 		}
@@ -180,6 +184,12 @@ public class VoiceActivity extends Activity{
 		mIsCountDownOn=false;
 		mNoSpeechCountDown.cancel();
 	}
+	protected void stoplisten() {
+		mNoSpeechCountDown.cancel();
+		mIsCountDownOn=false;
+		mSpeechRecognizer.destroy();
+		mSpeechRecognizer=null;
+	}
 	// Count down timer for Jelly Bean work around
 	protected CountDownTimer mNoSpeechCountDown = new CountDownTimer(5000, 5000) {
 		@Override
@@ -206,7 +216,7 @@ public class VoiceActivity extends Activity{
 		if (mSpeechRecognizer != null) {
 			mSpeechRecognizer.destroy();
 		}
-	}
+	} 
 
 	protected class SpeechRecognitionListener implements RecognitionListener {
 		
@@ -218,6 +228,7 @@ public class VoiceActivity extends Activity{
 				mIsCountDownOn = false;
 				mNoSpeechCountDown.cancel();
 			}
+			IsCommandRecognized=false;
 			audio.playSoundEffect(Sounds.SUCCESS);
 			Log.d(tag, "onBeginingOfSpeech"); //$NON-NLS-1$
 		}
@@ -240,7 +251,7 @@ public class VoiceActivity extends Activity{
 				mNoSpeechCountDown.cancel();
 				Log.d(tag, "mIsCountDownOn "+mIsCountDownOn);
 			}
-			StartListening();
+			ReStartListening();
 		}
 
 		@Override
@@ -250,7 +261,7 @@ public class VoiceActivity extends Activity{
 
 		@Override
 		public void onPartialResults(Bundle partialResults) {
-			ArrayList<String> data = partialResults
+/*			ArrayList<String> data = partialResults
 					.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
@@ -262,10 +273,11 @@ public class VoiceActivity extends Activity{
 			else if (commands !=null && commands.contains(str)) {
 				Log.d(tag, "par result " + str);
 				onVoiceCommand(str);
+				IsCommandRecognized=true;
 			//	ReStartListening();
 				StopListening();
 			}
-
+*/
 		}
 
 		@Override
@@ -278,26 +290,26 @@ public class VoiceActivity extends Activity{
 		@Override
 		public void onResults(Bundle results) {
 			//Log.d(TAG, "onResults"); //$NON-NLS-1$
+			if(IsCommandRecognized)
+				return ;
 			ArrayList<String> data = results
 					.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
 			Log.d(tag, "result " + str + "commands: "+commands);
-			if(commands !=null)
-			{
-				Log.d(tag, "command: "+commands.commands.get(0));
-			}
 			if(commands == null)
 			{
 				onVoiceCommand(str);
 				ReStartListening();
+				onResultOfSpeech();
 			}
 			else if(commands !=null)
 			{
+				Log.d(tag, "command: "+commands.commands.get(0));
 				if(commands.contains(str))
 				{
 					onVoiceCommand(str);
-					StopListening();
+				//	StopListening();
 				}
 				else
 					ReStartListening();

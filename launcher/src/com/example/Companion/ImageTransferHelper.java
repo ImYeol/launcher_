@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,14 +19,22 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.Camera.TakePictureCallback;
 import com.example.launcher.R;
+import com.google.android.glass.media.Sounds;
+import com.google.android.glass.widget.CardBuilder;
+import com.google.android.glass.widget.CardScrollView;
+import com.google.android.glass.widget.Slider;
 
 public class ImageTransferHelper extends Activity {
 
@@ -41,6 +51,11 @@ public class ImageTransferHelper extends Activity {
 	private String comment;
 	private ProgressBar fileTransferStateBar;
 
+	private CardScrollView mCardScroller;
+    private Slider mSlider;
+    private Slider.Indeterminate mIndeterminate;
+    private Slider.GracePeriod mGracePeriod;
+    
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 
@@ -206,6 +221,7 @@ public class ImageTransferHelper extends Activity {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			bm.compress(CompressFormat.JPEG, 100, baos);
 			byte[] imageByte = baos.toByteArray();
+			fileTransferStateBar.setMax(imageByte.length);
 			int len;
 			final int size = 512;
 			byte[] sendByte = new byte[size];
@@ -238,6 +254,8 @@ public class ImageTransferHelper extends Activity {
 					} else {
 						mOutStream.write(sendByte);
 					}
+					bytesRead+=len;
+					progressBarHandle.obtainMessage(bytesRead);
 					 mOutStream.flush();
 				}
 				flagByte[0]=2;
@@ -258,4 +276,17 @@ public class ImageTransferHelper extends Activity {
 			});
 		}
 	}
+	
+	Handler progressBarHandle=new Handler()
+	{
+		private int size;
+		public void init()
+		{
+			size=0;
+		}
+		public void handleMessage(android.os.Message msg) {
+			size+=msg.what;
+			fileTransferStateBar.setProgress(size);			
+		}
+	};
 }
