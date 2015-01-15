@@ -38,7 +38,7 @@ public class ImageCommentDialog extends VoiceActivity {
 	private View endOfSpeechDialog;
 	private boolean IsCommandRecognized=false;
 	private VoiceCommand dialogCmd;
-	private List<String> dialogMenu=Arrays.asList("yes","No");
+	private List<String> dialogMenu=Arrays.asList("yes","No","finish");
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +62,7 @@ public class ImageCommentDialog extends VoiceActivity {
 				endOfSpeechDialog = new CardBuilder(this.getBaseContext(),
 						CardBuilder.Layout.ALERT)
 						.setText("You want to send message?")
-						.setFootnote("YES  :   NO").getView();
+						.setFootnote("YES : NO : finish").getView();
 				framelayout.addView(endOfSpeechDialog);
 				framelayout.bringChildToFront(endOfSpeechDialog);
 			}
@@ -101,6 +101,11 @@ public class ImageCommentDialog extends VoiceActivity {
 					ReStartListening();
 					Log.d(TAG, "No called");
 				}
+				else if(command.contains("finish"))
+				{
+					setResult(RESULT_OK);
+					finish();
+				}
 			}
 		}
 	}
@@ -116,6 +121,7 @@ public class ImageCommentDialog extends VoiceActivity {
 		//super.onCreateOptionsMenu(menu);
 		menu.add("Yes");
 		menu.add("No");
+		menu.add("finish");
 		return true;
 	}
 	@Override
