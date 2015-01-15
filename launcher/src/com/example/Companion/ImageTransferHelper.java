@@ -4,8 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,20 +17,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
-import android.media.AudioManager;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.Camera.TakePictureCallback;
 import com.example.launcher.R;
-import com.google.android.glass.media.Sounds;
-import com.google.android.glass.widget.CardBuilder;
 import com.google.android.glass.widget.CardScrollView;
 import com.google.android.glass.widget.Slider;
 
@@ -61,6 +57,7 @@ public class ImageTransferHelper extends Activity {
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.transfer_dialog);
+		setActivitySize();
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		fileTransferStateBar = (ProgressBar) findViewById(R.id.file_transfer_progressbar);
 
@@ -88,7 +85,22 @@ public class ImageTransferHelper extends Activity {
 			}
 		}
 	}
+	private void setActivitySize()
+	{
+		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+		
+		Point size = new Point();
+		display.getSize(size);
+		
+		int width = (int) (size.x * 0.8);
 
+		int height = (int) (size.y * 0.5);  
+
+		getWindow().getAttributes().width = width;
+
+		getWindow().getAttributes().height = height;
+	}
+	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQUEST_TO_ENABLE_BT) {
@@ -218,14 +230,16 @@ public class ImageTransferHelper extends Activity {
 				e1.printStackTrace();
 			}
 			Bitmap bm = TakePictureCallback.getBitmap(uri);
+			Log.d(TAG, "bitmap: "+bm);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			bm.compress(CompressFormat.JPEG, 100, baos);
 			byte[] imageByte = baos.toByteArray();
 			fileTransferStateBar.setMax(imageByte.length);
-			int len;
+			int len=0;
 			final int size = 512;
 			byte[] sendByte = new byte[size];
 			ByteArrayInputStream bais = new ByteArrayInputStream(imageByte);
+			Log.d(TAG, "bais :"+bais	);
 			try {
 				bytesRead = 0;
 				byte[] flagByte=new byte[1];
@@ -234,7 +248,7 @@ public class ImageTransferHelper extends Activity {
 				mOutStream.flush();
 				
 				byte[] commentByte=comment.getBytes();
-				
+				Log.d(TAG, "comment :"+comment	);
 				mOutStream.write(commentByte);
 				mOutStream.flush();
 				
@@ -254,8 +268,7 @@ public class ImageTransferHelper extends Activity {
 					} else {
 						mOutStream.write(sendByte);
 					}
-					bytesRead+=len;
-					progressBarHandle.obtainMessage(bytesRead);
+					progressBarHandle.sendEmptyMessage(len);
 					 mOutStream.flush();
 				}
 				flagByte[0]=2;

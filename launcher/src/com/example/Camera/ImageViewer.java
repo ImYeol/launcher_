@@ -60,7 +60,7 @@ public class ImageViewer extends VoiceActivity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
-		TakePictureCallback.resetBitmap(uri.toString());
+		//TakePictureCallback.resetBitmap(uri.toString());
 	}
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {

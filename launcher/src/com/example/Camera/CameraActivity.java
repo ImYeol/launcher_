@@ -48,7 +48,7 @@ public class CameraActivity extends VoiceActivity {
 	public static final int MEDIA_TYPE_VIDEO = 2;
 	private BroadcastReceiver receiver;
 
-	private List<String> CommandList=Arrays.asList("catch","finish");
+	private List<String> CommandList=Arrays.asList("shot","finish");
 	private VoiceCommand voiceCommand;
 	private TakePictureCallback mPictureCallback;
 	private View guideView;
@@ -61,7 +61,7 @@ public class CameraActivity extends VoiceActivity {
 	//	mCamera = getCameraInstance();
 		cameraView = new CameraSurfaceView(this);
 		guideView = new CardBuilder(this, CardBuilder.Layout.MENU)
-	    .setFootnote("say catch")
+	    .setFootnote("say shot")
 	    .getView();
 		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(cameraView);
@@ -132,9 +132,9 @@ public class CameraActivity extends VoiceActivity {
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
-		if(command.equals("catch"))
+		if(command.equals("shot"))
 		{
-			Log.d(tag, "onVoiceCommand: catch");
+			Log.d(tag, "onVoiceCommand: shot");
 			StopListening();
 			mCamera.takePicture(null, null, mPictureCallback);
 		}

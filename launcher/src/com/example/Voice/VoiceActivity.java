@@ -76,22 +76,31 @@ public class VoiceActivity extends Activity{
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		if (mSpeechRecognizer != null && mSpeechRecognizer.isRecognitionAvailable(this))
-			mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
+		if (mSpeechRecognizer == null)
+		{
+			mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+			mSpeechRecognizer
+			.setRecognitionListener(mVoiceCommandListener);
+		}
+		mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
 	}
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
+		if (mSpeechRecognizer != null) {
+			mSpeechRecognizer.destroy();
+			mSpeechRecognizer = null;
+		}
 	}
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
-		if (mSpeechRecognizer != null) {
-			mSpeechRecognizer.destroy();
+/*		if (mSpeechRecognizer != null) {
+			mSpeechRecognizer.destroy(); 
 			mSpeechRecognizer = null;
-		}
+		}*/
 	
 	}
 	public static ProgressDialog createProgressDialog(Context mContext) {
@@ -145,7 +154,7 @@ public class VoiceActivity extends Activity{
 			case MSG_RECOGNIZER_CANCEL:
 				target.mSpeechRecognizer.cancel();
 				target.mIsListening = false;
-				Log.d(TAG, "message canceled recognizer"); //$NON-NLS-1$
+		//		Log.d(TAG, "message canceled recognizer"); //$NON-NLS-1$
 				break;
 			}
 		}
@@ -184,12 +193,7 @@ public class VoiceActivity extends Activity{
 		mIsCountDownOn=false;
 		mNoSpeechCountDown.cancel();
 	}
-	protected void stoplisten() {
-		mNoSpeechCountDown.cancel();
-		mIsCountDownOn=false;
-		mSpeechRecognizer.destroy();
-		mSpeechRecognizer=null;
-	}
+
 	// Count down timer for Jelly Bean work around
 	protected CountDownTimer mNoSpeechCountDown = new CountDownTimer(5000, 5000) {
 		@Override
@@ -228,8 +232,8 @@ public class VoiceActivity extends Activity{
 				mIsCountDownOn = false;
 				mNoSpeechCountDown.cancel();
 			}
-			IsCommandRecognized=false;
 			audio.playSoundEffect(Sounds.SUCCESS);
+			IsCommandRecognized=false;
 			Log.d(tag, "onBeginingOfSpeech"); //$NON-NLS-1$
 		}
 
@@ -296,7 +300,7 @@ public class VoiceActivity extends Activity{
 					.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
-			Log.d(tag, "result " + str + "commands: "+commands);
+		//	Log.d(tag, "result " + str + "commands: "+commands);
 			if(commands == null)
 			{
 				onVoiceCommand(str);
@@ -305,7 +309,7 @@ public class VoiceActivity extends Activity{
 			}
 			else if(commands !=null)
 			{
-				Log.d(tag, "command: "+commands.commands.get(0));
+				Log.d(tag, "command: "+ str);
 				if(commands.contains(str))
 				{
 					onVoiceCommand(str);
