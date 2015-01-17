@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: /home/yeol/workspace/launcher_/launcher/src/com/example/Voice/IVoiceListenerCallback.aidl
+ * Original file: C:\\eclipse-SDK-4.2-win32-x86_64\\eclipse\\workspace\\launcher_\\launcher\\src\\com\\example\\Voice\\IVoiceListenerCallback.aidl
  */
 package com.example.Voice;
 public interface IVoiceListenerCallback extends android.os.IInterface

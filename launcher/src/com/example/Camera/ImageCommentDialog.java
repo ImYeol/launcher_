@@ -62,7 +62,7 @@ public class ImageCommentDialog extends VoiceActivity {
 				endOfSpeechDialog = new CardBuilder(this.getBaseContext(),
 						CardBuilder.Layout.ALERT)
 						.setText("You want to send message?")
-						.setFootnote("YES : NO : finish").getView();
+						.setFootnote("YES : NO : FINISH").getView();
 				framelayout.addView(endOfSpeechDialog);
 				framelayout.bringChildToFront(endOfSpeechDialog);
 			}

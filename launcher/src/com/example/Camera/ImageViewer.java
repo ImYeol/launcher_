@@ -75,14 +75,14 @@ public class ImageViewer extends VoiceActivity {
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
-		if(command.equals("send"))
+		if(command.contains("send"))
 		{
 			StopListening();
 			Log.d(TAG, "send selected");
 			Intent intent=IntentBuilder.CreateIntent(ImageViewer.this, ImageCommentDialog.class).setUri(uri.toString()).build();
 			IntentBuilder.startActivityForResult(ImageViewer.this, intent);
 		}
-		else if(command.equals("delete"))
+		else if(command.contains("delete"))
 		{
 			Log.d(TAG, "send selected");
 			imgFile=new File(uri.getPath());

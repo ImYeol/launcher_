@@ -59,8 +59,8 @@ public class VoiceActivity extends Activity{
 				RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
 				"en-US");
-//		mSpeechRecognizerIntent.putExtra(
-	//			RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+		mSpeechRecognizerIntent.putExtra(
+				RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
 	//	mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
 		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
@@ -265,11 +265,21 @@ public class VoiceActivity extends Activity{
 
 		@Override
 		public void onPartialResults(Bundle partialResults) {
-/*			ArrayList<String> data = partialResults
+			if(commands == null)
+				return ;
+			ArrayList<String> data = partialResults
 					.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
-		//	Log.d(tag, "par result " + str);
+			
+			if(str.length() > 10 && !commands.contains(str))
+			{
+				Log.d(TAG, "par : "+str);
+				ReStartListening();
+				IsCommandRecognized=true;
+			}
+				
+	/*	//	Log.d(tag, "par result " + str);
 			if(commands == null)
 			{
 				onVoiceCommand(str);
@@ -312,6 +322,7 @@ public class VoiceActivity extends Activity{
 				Log.d(tag, "command: "+ str);
 				if(commands.contains(str))
 				{
+					Log.d(tag, "contains");
 					onVoiceCommand(str);
 				//	StopListening();
 				}
