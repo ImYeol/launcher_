@@ -12,6 +12,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.media.SoundPool;
+import android.media.effect.Effect;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import android.speech.RecognizerIntent;
 
 import android.speech.SpeechRecognizer;
 import android.util.Log;
+import android.view.SoundEffectConstants;
 
 public class VoiceListenerService extends Service {
 
@@ -46,18 +49,16 @@ public class VoiceListenerService extends Service {
 
 	private VoiceCommand commands;
 	private AudioManager audio;
-	
-/*	public class VoiceListenerBinder extends Binder {
-		VoiceListenerService getService() {
-			return VoiceListenerService.this;
-		}
-	}*/
+	private boolean IsCommandRecognized=false;
+	private boolean NotCommand=false;
+	private int recognizedCommandLength=0;
+
 	public class VoiceListenerBinder extends IVoiceListenerService.Stub {
 
 		@Override
-		public void setCommands(VoiceCommand commands) throws RemoteException {
+		public void setCommands(VoiceCommand cmd) throws RemoteException {
 			// TODO Auto-generated method stub
-			VoiceListenerService.this.setCommands(commands);
+			VoiceListenerService.this.setCommands(cmd);
 		}
 
 		@Override
@@ -70,7 +71,6 @@ public class VoiceListenerService extends Service {
 		public void registerCallback(IVoiceListenerCallback callback)
 				throws RemoteException {
 			// TODO Auto-generated method stub
-			Log.d(tag ,"registerCallback");
 			VoiceListenerService.this.registerCallback(callback);
 		}
 
@@ -106,7 +106,7 @@ public class VoiceListenerService extends Service {
 				"en-US");
 		mSpeechRecognizerIntent.putExtra(
 				RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
 		mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
 		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 		
@@ -171,7 +171,6 @@ public class VoiceListenerService extends Service {
 		Message message = Message.obtain(null, MSG_RECOGNIZER_START_LISTENING);
 		try {
 			mServerMessenger.send(message);
-	//		Log.d(tag, "start msg");
 		} catch (RemoteException e) {
 			Log.d(tag, "On error send msg error");
 		}
@@ -216,6 +215,9 @@ public class VoiceListenerService extends Service {
 				mNoSpeechCountDown.cancel();
 			}
 			audio.playSoundEffect(Sounds.SUCCESS);
+			IsCommandRecognized=false;
+			NotCommand=false;
+			recognizedCommandLength=0;
 			try {
 				mCallback.onBeginSpeech();
 			} catch (RemoteException e) {
@@ -247,9 +249,8 @@ public class VoiceListenerService extends Service {
 			if (mIsCountDownOn) {
 				mIsCountDownOn = false;
 				mNoSpeechCountDown.cancel();
-				Log.d(tag, "mIsCountDownOn "+mIsCountDownOn);
 			}
-			StartListening();
+			ReStartListening();
 		}
 
 		@Override
@@ -259,18 +260,24 @@ public class VoiceListenerService extends Service {
 
 		@Override
 		public void onPartialResults(Bundle partialResults) {
+			if(IsCommandRecognized || NotCommand)
+				return ;
 			ArrayList<String> data = partialResults
 					.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
-		//	Log.d(tag, "par result " + str);
-			if(commands == null)
-			{
-				onVoiceCommand(str);
-			}
-			else if (commands !=null && commands.contains(str)) {
-				
-				onVoiceCommand(str);
+			if(str.length() > 8 && commands != null)
+				NotCommand=true;
+			int cmdId=-1;
+			if (commands == null) {
+				if (str != null && str.length() != recognizedCommandLength) {
+					recognizedCommandLength = str.length();
+					onVoiceCommand(str);
+				}
+			} else if (commands != null && (cmdId = commands.contains(str)) != -1) {
+				Log.d(tag, "par result :" + str);
+				IsCommandRecognized = true;
+				onVoiceCommand_int(cmdId);
 				ReStartListening();
 			}
 
@@ -286,22 +293,35 @@ public class VoiceListenerService extends Service {
 		@Override
 		public void onResults(Bundle results) {
 			//Log.d(TAG, "onResults"); //$NON-NLS-1$
+			if(IsCommandRecognized || NotCommand)
+			{
+				ReStartListening();
+				return ;
+			}
 			ArrayList<String> data = results
 					.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
+			int cmdId=-1;
 			Log.d(tag, "result " + str);
-
 			if(commands == null)
 			{
 				onVoiceCommand(str);
-				ReStartListening();
+				try {
+					mCallback.onResultOfSpeech();
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-			else if(commands !=null && commands.contains(str))
+			else if(commands !=null)
 			{
-				onVoiceCommand(str);
-				ReStartListening();
+				if((cmdId=commands.contains(str)) != -1)
+					onVoiceCommand_int(cmdId);
+				else
+					onVoiceCommand(str);
 			}
+			ReStartListening();
 
 		}
 
@@ -313,6 +333,15 @@ public class VoiceListenerService extends Service {
 		{
 			try {
 				mCallback.onVoiceCommand(str);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		private void onVoiceCommand_int(int cmdId)
+		{
+			try {
+				mCallback.onVoiceCommand_int(cmdId);
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

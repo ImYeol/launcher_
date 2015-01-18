@@ -5,10 +5,11 @@ import java.util.List;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 public class VoiceCommand implements Parcelable{
 
-	private List<String> commands;
+	public String[] commands;
 	
 	public static final Parcelable.Creator<VoiceCommand> CREATOR
     = new Parcelable.Creator<VoiceCommand>() {
@@ -21,42 +22,35 @@ public class VoiceCommand implements Parcelable{
               return new VoiceCommand[size];
          }
     };
-	public VoiceCommand()
-	{
-		commands=new ArrayList<String>();
-	}
+
 	public VoiceCommand(Parcel in)
 	{
 		readFromParcel(in);
 	}
 	private void readFromParcel(Parcel in) {
 		// TODO Auto-generated method stub
-		in.readStringList(commands);
+		commands=new String[in.readInt()];
+		in.readStringArray(commands);
 	}
-	public VoiceCommand(List<String> commands)
+	public VoiceCommand(String[] commands)
 	{
 		this.commands=commands;
 	}
 	
-	public List<String> getCommandList()
+	public String[] getCommandList()
 	{
 		return this.commands;
 	}
 	
-	public boolean contains(String recognizedCommand)
+	public int contains(String recognizedCommand)
 	{
-		for(String command : commands)
+		for(int i=0; i < commands.length; i++)
 		{
-			if(recognizedCommand.contains(command))
-				return true;
+			if(recognizedCommand.contains(commands[i]))
+				return i;
 		}
-		return false;
+		return -1;
 	}
-	public void add(String command)
-	{
-		commands.add(command);
-	}
-
 	@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub
@@ -66,6 +60,7 @@ public class VoiceCommand implements Parcelable{
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		// TODO Auto-generated method stub
-		dest.writeStringList(commands);
+		dest.writeInt(commands.length);
+		dest.writeStringArray(commands);
 	}
 }

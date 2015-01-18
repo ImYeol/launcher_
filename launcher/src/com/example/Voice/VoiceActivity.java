@@ -1,10 +1,14 @@
 package com.example.Voice;
 
+import java.util.Arrays;
+import java.util.List;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager.BadTokenException;
@@ -12,19 +16,30 @@ import android.widget.ProgressBar;
 
 import com.example.launcher.R;
 
-public class VoiceActivity extends Activity{
+public abstract class VoiceActivity extends Activity{
 
 	private final static String TAG="VoiceAcitivity";
 	protected VoiceCommandListener mVoiceCommandListener;
 	ProgressDialog voiceRecoginitionStateDialog;
+	protected VoiceCommand voiceCommand;
+	protected String[] CommandList;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		voiceCommand=null;
+		CommandList=null;
 		SetOnVoiceCommandListener();
 	}
 	
+	protected VoiceCommand getVoiceCommand(){
+		if(voiceCommand ==null)
+		{
+			this.voiceCommand=new VoiceCommand(CommandList);
+		}
+		return this.voiceCommand;
+	}
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
@@ -35,13 +50,21 @@ public class VoiceActivity extends Activity{
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		if(mVoiceCommandListener ==null)
+			SetOnVoiceCommandListener();
 		mVoiceCommandListener.BindService();
 	}
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		mVoiceCommandListener.unBindService();
+		UnBindService();
+	}
+	protected void UnBindService() {
+		if (mVoiceCommandListener != null && mVoiceCommandListener.IsBindToService()) {
+			mVoiceCommandListener.unBindService();
+			mVoiceCommandListener = null;
+		}
 	}
 	@Override
 	protected void onStop() {
@@ -53,62 +76,24 @@ public class VoiceActivity extends Activity{
 	protected void SetOnVoiceCommandListener() {
 		mVoiceCommandListener=new VoiceCommandListener(this);
 	}
-	
-	public static ProgressDialog createProgressDialog(Context mContext) {
-        ProgressDialog dialog = new ProgressDialog(mContext);
-        try {
-                dialog.show();
-        } catch (BadTokenException e) {
-
-		}
-        dialog.setCancelable(false);
-        dialog.setContentView(R.layout.voice_recognition_state_dialog);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-		// dialog.setMessage(Message);
-		return dialog;
-	}
-
 	public void onBeginSpeech() {
-	/*	runOnUiThread(new Runnable() {
-			
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				if (voiceRecoginitionStateDialog == null) {
-					voiceRecoginitionStateDialog = VoiceActivity.this.createProgressDialog(VoiceActivity.this);
-					voiceRecoginitionStateDialog.show();
-					ProgressBar progressStateBar=(ProgressBar)voiceRecoginitionStateDialog.findViewById(R.id.recognition_state_progressbar);
-					progressStateBar.setVisibility(View.VISIBLE);
-				} else {
-					voiceRecoginitionStateDialog.show();
-				}
-			}
-		});*/
 	}
 
 	public void onEndOfSpeech() {
-	/*	runOnUiThread(new Runnable() {
-			
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				if (voiceRecoginitionStateDialog.isShowing())
-				{
-				//	ProgressBar progressStateBar=(ProgressBar)findViewById(R.id.recognition_state_progressbar);
-				//	progressStateBar.setVisibility(View.GONE);
-					ProgressBar progressStateBar=(ProgressBar)voiceRecoginitionStateDialog.findViewById(R.id.recognition_state_progressbar);
-					progressStateBar.setVisibility(View.GONE);
-					voiceRecoginitionStateDialog.dismiss();
-				}
-			}
-		});*/
+
 	}
-	public void onVoiceCommand(String command)
+	public void onResultOfSpeech()
 	{
-		Log.d(TAG, "Sub Class should implement onVoiceCommand");
+		
 	}
+	public abstract void onVoiceCommand(String command);
+	public abstract void onVoiceCommand(int cmdId);
 	public void setCommands()
 	{
-		Log.d(TAG, "Sub Class should implement setCommands");
+		mVoiceCommandListener.setCommands(this.voiceCommand);
+	}
+	public void ReSetCommands()
+	{
+		mVoiceCommandListener.ReSetCommands();
 	}
 }

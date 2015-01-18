@@ -23,9 +23,7 @@ public class ImageViewer extends VoiceActivity {
 	private final String TAG="ImageViewer";
 	private ImageView view;
 	private File imgFile;
-	private BroadcastReceiver receiver;
 	private Uri uri;
-	private List<String> CommandList=Arrays.asList("Upload","Delete","Finish");
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -34,7 +32,7 @@ public class ImageViewer extends VoiceActivity {
 		view = (ImageView)findViewById(R.id.imageView);
 		String CacheKey=getIntent().getExtras().getString("CacheKey");
 		uri=Uri.parse(CacheKey);
-		
+		CommandList=new String[]{"send","delete","finish"};
 		view.setImageBitmap(TakePictureCallback.getBitmap(CacheKey));
 /*		imgFile=new File(uri.getPath());
 		if(imgFile.exists()){
@@ -47,7 +45,6 @@ public class ImageViewer extends VoiceActivity {
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		setCommands();
 	}
 	@Override
 	protected void onStart() {
@@ -66,6 +63,7 @@ public class ImageViewer extends VoiceActivity {
 		super.onActivityResult(requestCode, resultCode, data);
 		if(resultCode == RESULT_OK)
 		{
+			UnBindService();
 			setResult(RESULT_OK);
 			finish();
 		}
@@ -73,31 +71,33 @@ public class ImageViewer extends VoiceActivity {
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
-		if(command.equals("upload"))
+	}
+	@Override
+	public void onVoiceCommand(int cmdId) {
+		// TODO Auto-generated method stub
+		final int id=cmdId;
+		if(id == 0)  // send
 		{
-			Log.d(TAG, "upload selected");
+			Log.d(TAG, "send selected");
+			UnBindService();
 			Intent intent=IntentBuilder.CreateIntent(ImageViewer.this, ImageCommentDialog.class).setUri(uri.toString()).build();
 			IntentBuilder.startActivityForResult(ImageViewer.this, intent);
 		}
-		else if(command.equals("delete"))
+		else if(id == 1) // delete
 		{
-			Log.d(TAG, "upload selected");
+			Log.d(TAG, "delete selected");
 			imgFile=new File(uri.getPath());
 			imgFile.delete();
-			finish();
-		}
-		else if(command.equals("finish"))
-		{
+			UnBindService();
 			setResult(RESULT_OK);
 			finish();
 		}
-	}
-	@Override
-	public void setCommands() {
-		// TODO Auto-generated method stub
-		VoiceCommand voiceCommand=new VoiceCommand(CommandList);
-		mVoiceCommandListener.setCommands(voiceCommand);
-		
+		else if(id == 2)  // finish
+		{
+			UnBindService();
+			setResult(RESULT_OK);
+			finish();
+		}
 	}
 	@Override
 	public void onAttachedToWindow() {
@@ -110,12 +110,12 @@ public class ImageViewer extends VoiceActivity {
 			for(String command : CommandList)
 			{
 				MenuItem item=menu.add(command);
-			/*	if(command.equals("Upload"))
-				{
-					Intent intent=new Intent(this,ImageCommentDialog.class);
-					intent.putExtra("CacheKey", getIntent().getExtras().getString("CacheKey"));
-					item.setIntent(intent);
-				}*/
+				if(command.equals("send"))
+					item.setIcon(R.drawable.ic_share_50);
+				else if(command.equals("delete"))
+					item.setIcon(R.drawable.ic_delete_50);
+				else if(command.equals("finish"))
+					item.setIcon(R.drawable.ic_no_50);
 			}
 		return true;
 	}
@@ -127,25 +127,28 @@ public class ImageViewer extends VoiceActivity {
 		if (item.getItemId() == -1) {
 			return true;
 		}
-		else if(item.getTitle().toString().equals("Upload"))
+		else if(item.getTitle().toString().equals("send"))
 		{
-			Log.d(TAG, "upload");
+			Log.d(TAG, "send");
+			UnBindService();
 			Intent intent=new Intent(ImageViewer.this,ImageCommentDialog.class);
 			intent.putExtra("Uri", uri.toString());
 			startActivityForResult(intent, 0);
 	//		Intent intent=IntentBuilder.CreateIntent(this, ImageCommentDialog.class).setCacheKey(uri.toString()).build();
 	//		IntentBuilder.startActivityForResult(this, intent);
 		}
-		else if(item.getTitle().toString().equals("Delete"))
+		else if(item.getTitle().toString().equals("delete"))
 		{	
 			Log.d(TAG, "delete");
+			UnBindService();
 			imgFile=new File(uri.getPath());
 			imgFile.delete();
 			finish();
 		}
-		else if(item.getTitle().toString().equals("Finish"))
+		else if(item.getTitle().toString().equals("finish"))
 		{
 			Log.d(TAG, "finish");
+			UnBindService();
 			setResult(RESULT_OK);
 			finish();
 		}

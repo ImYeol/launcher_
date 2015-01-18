@@ -16,37 +16,22 @@
 
 package com.example.Camera;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.graphics.Color;
 import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.speech.SpeechRecognizer;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
+
 import com.example.Voice.VoiceActivity;
-import com.example.Voice.VoiceCommand;
 import com.example.launcher.R;
-import com.google.android.glass.content.Intents;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
+import com.google.android.glass.widget.CardBuilder;
 
 public class CameraActivity extends VoiceActivity {
 
@@ -58,23 +43,31 @@ public class CameraActivity extends VoiceActivity {
 	private GestureDetector mGestureDetector;
 	public static final int MEDIA_TYPE_IMAGE = 1;
 	public static final int MEDIA_TYPE_VIDEO = 2;
-	private BroadcastReceiver receiver;
-
-	private List<String> CommandList=Arrays.asList("Catch","finish");
-	private VoiceCommand voiceCommand;
 	private TakePictureCallback mPictureCallback;
+	private View guideView;
+	private FrameLayout preview;
+	private TextView catch_label;
+	private TextView finish_label;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.camera);
+		catch_label=(TextView)findViewById(R.id.camera_catch_label);
+		finish_label=(TextView)findViewById(R.id.camera_finish_label);
 		mGestureDetector = createGestureDetector(this);
-		mCamera = getCameraInstance();
-		cameraView = new CameraSurfaceView(this, mCamera);
-		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+		cameraView = new CameraSurfaceView(this);
+		preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(cameraView);
+		((FrameLayout)findViewById(R.id.camera_overlayview)).bringToFront();
+		CommandList=new String[]{"catch","finish"};
 		mPictureCallback=new TakePictureCallback(this);
 		
+	}
+	private void initTextView()
+	{
+		catch_label.setTextColor(Color.WHITE);
+		finish_label.setTextColor(Color.WHITE);
 	}
 	@Override
 	protected void onStart() {
@@ -86,12 +79,6 @@ public class CameraActivity extends VoiceActivity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
-	}
-	@Override
-	public void setCommands() {
-		// TODO Auto-generated method stub
-		voiceCommand=new VoiceCommand(CommandList);
-		mVoiceCommandListener.setCommands(voiceCommand);
 	}
 	
 	public static Camera getCameraInstance() {
@@ -114,9 +101,8 @@ public class CameraActivity extends VoiceActivity {
 		}
 		mCamera.startPreview();
 		cameraView.setCamera(mCamera);
+		initTextView();
 		super.onResume();
-		
-		setCommands();
 	}
 
 	@Override
@@ -133,17 +119,41 @@ public class CameraActivity extends VoiceActivity {
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
-		if(command.equals("catch"))
+
+	}
+	
+	@Override
+	public void onVoiceCommand(int cmdId) {
+		// TODO Auto-generated method stub
+		final int id = cmdId;
+		if(id== 0) // catch
 		{
+			runOnUiThread(new Runnable() {
+				
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					catch_label.setTextColor(Color.BLUE);
+				}
+			});
+			UnBindService();
 			mCamera.takePicture(null, null, mPictureCallback);
 		}
-		else if(command.equals("finish"))
+		else if(id == 1) // finish
 		{
+			runOnUiThread(new Runnable() {
+				
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					finish_label.setTextColor(Color.BLUE);
+				}
+			});
+			UnBindService();
 			setResult(RESULT_OK);
 			finish();
 		}
 	}
-
 	private GestureDetector createGestureDetector(Context context) {
 		GestureDetector gestureDetector = new GestureDetector(context);
 		// Create a base listener for generic gestures
@@ -154,6 +164,7 @@ public class CameraActivity extends VoiceActivity {
 				// TODO Auto-generated method stub
 				if (gesture == Gesture.TAP) {
 					Log.d(tag, "tap!!!!!!!!!");
+					catch_label.setTextColor(Color.BLUE);
 					mCamera.takePicture(null, null, mPictureCallback);
 
 				}
@@ -170,5 +181,4 @@ public class CameraActivity extends VoiceActivity {
 		Log.d(tag, "generic Event");
 		return mGestureDetector.onMotionEvent(event);
 	}
-
 }

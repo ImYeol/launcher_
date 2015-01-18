@@ -1,5 +1,7 @@
 package com.example.Voice;
 
+import java.util.Arrays;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +10,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.example.Voice.VoiceListenerService.VoiceListenerBinder;
 
@@ -17,8 +20,8 @@ public class VoiceCommandListener implements VoiceListener {
 //	private VoiceListenerService mService; // 연결 타입 서비스
 	private transient boolean mBound = false; // 서비스 연결 여부
 	private VoiceCommand commands;
-	private transient IVoiceListenerService mService;
-	private transient IVoiceListenerCallback mCallback=new IVoiceListenerCallback.Stub() {
+	private IVoiceListenerService mService;
+	private IVoiceListenerCallback mCallback=new IVoiceListenerCallback.Stub() {
 		
 		@Override
 		public void onVoiceCommand(String command) throws RemoteException {
@@ -26,6 +29,11 @@ public class VoiceCommandListener implements VoiceListener {
 			mVoiceActivity.onVoiceCommand(command);
 		}
 		
+		@Override
+		public void onVoiceCommand_int(int cmdId) throws RemoteException {
+			// TODO Auto-generated method stub
+			mVoiceActivity.onVoiceCommand(cmdId);
+		}
 		@Override
 		public void onEndOfSpeech() throws RemoteException {
 			// TODO Auto-generated method stub
@@ -36,6 +44,17 @@ public class VoiceCommandListener implements VoiceListener {
 		public void onBeginSpeech() throws RemoteException {
 			// TODO Auto-generated method stub
 			mVoiceActivity.onBeginSpeech();
+		}
+		
+		@Override
+		public void onResultOfSpeech() throws RemoteException {
+			// TODO Auto-generated method stub
+			mVoiceActivity.onResultOfSpeech();
+		}
+		@Override
+		public void onNotCommandError() throws RemoteException {
+			// TODO Auto-generated method stub
+			
 		}
 	};
 	
@@ -70,11 +89,19 @@ public class VoiceCommandListener implements VoiceListener {
 		// TODO Auto-generated method stub
 		mVoiceActivity.onVoiceCommand(command);
 	}
-
+	public void onVoiceCommand(int cmdId)
+	{
+		mVoiceActivity.onVoiceCommand(cmdId);
+	}
+	public boolean IsBindToService()
+	{
+		return mBound;
+	}
 	public boolean BindService() {
 /*		Intent intent = new Intent(mVoiceActivity, VoiceListenerService.class);
 		return mVoiceActivity.bindService(intent, mConnection,
 				Context.BIND_AUTO_CREATE);*/
+		this.commands=mVoiceActivity.getVoiceCommand();
 		Intent intent=new Intent(IVoiceListenerService.class.getName());
 		return mVoiceActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
@@ -105,7 +132,18 @@ public class VoiceCommandListener implements VoiceListener {
 		}
 		return true;
 	}
-	
+	public boolean ReSetCommands()
+	{
+		if(mService == null)
+			return false;
+		try {
+			mService.ReSetCommands();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
+	}
 	public void onBeginSpeech()
 	{
 		mVoiceActivity.onBeginSpeech();
@@ -126,8 +164,13 @@ public class VoiceCommandListener implements VoiceListener {
 			
 			try {
 				mService.registerCallback(mCallback);
+				if(commands !=null)
+				{
+					mService.setCommands(commands);
+				}
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
+				unBindService();
 				e.printStackTrace();
 			}
 		}
