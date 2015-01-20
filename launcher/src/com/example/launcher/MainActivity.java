@@ -17,6 +17,14 @@
 package com.example.launcher;
 
 import java.util.ArrayList;
+
+import com.example.Camera.CameraActivity;
+import com.example.Voice.VoiceActivity;
+import com.example.Voice.VoiceCommandListActivity;
+import com.example.Voice.VoiceListenerService;
+import com.example.util.IntentBuilder;
+import com.example.util.WarningDialog;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -24,6 +32,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -41,12 +50,48 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		glview=new GLView(this);
 		setContentView(glview);
-
+	//	CommandList=new String[]{"camera","google","command"};
+		//startService(new Intent(this,VoiceListenerService.class));
 	}
 	@Override
-	protected void onStart() {  //  i have to modify this on start !! it is weird after screen is locked
+	protected void onDestroy() {
 		// TODO Auto-generated method stub
-//		glview.registerReceiver(receiver);
-		super.onStart();
+		super.onDestroy();
+		//stopService(new Intent(this,VoiceListenerService.class));
 	}
+/*	
+	@Override
+	public void onVoiceCommand(String command) {
+		final String cmd=command;
+	}
+	@Override
+	public void onVoiceCommand(int cmdId) {
+		// TODO Auto-generated method stub
+		final int id = cmdId;
+		runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				if(id == 0) // camera
+				{
+					UnBindService();
+					Intent intent=IntentBuilder.CreateIntent(MainActivity.this, CameraActivity.class).build();
+					IntentBuilder.startActivity(MainActivity.this, intent);
+				}
+				else if(id == 1)  // google
+				{
+					UnBindService();
+					Intent intent=new Intent("com.google.glass.action.START_VOICE_SEARCH_ACTIVITY");
+					startActivity(intent);
+				}
+				else if(id == 2) // voice
+				{
+					UnBindService();
+					Intent intent=new Intent(MainActivity.this,VoiceCommandListActivity.class);
+					startActivity(intent);
+				}
+			}
+		});
+	}*/
 }

@@ -33,24 +33,7 @@ import android.util.Log;
 class ApplicationInfo {
 
 	public final static String TAG="ApplicationInfo";
-	public final static float displayedPlace= -40.f;
-	public final static float disapearedPlace = 0.f;
-	public final static float originPlace= -80.f;
-	public final static float speed=5;
-	public final static float alphaDownRegion=disapearedPlace-displayedPlace;
-	public final static float threshold = (disapearedPlace - originPlace)/4;
-	public final static float defaultDistance= displayedPlace - originPlace;
-	public static int CurIndex=0;
-	public static int NextIndex=0;
-	public static int PreIndex=0;
-	
-	private static int state=0;
-	private static int direction = GLView.NoSwipe;
-	public static boolean completed=false;
-	public static final float SCALE=0.05f;
-	private static float remainedDistance=0;
     CharSequence title;
-
     /**
      * The intent used to start the application.
      */
@@ -67,11 +50,13 @@ class ApplicationInfo {
     boolean filtered;
     
     private static float offset=0.f;
+    public static int Destination=Constants.NO_DESTINATION;
 	private Bitmap bitmap=null;
 	private int texID=-1;
 	private float x,y,z;
 	private int index=0;
-	private boolean Current;
+	public static boolean IsArrived=false;
+	public static boolean IsScrolling=false;
     /**
      * Creates the application intent based on a component name and various launch flags.
      *
@@ -81,8 +66,7 @@ class ApplicationInfo {
 	
 	public ApplicationInfo() {
 		// TODO Auto-generated constructor stub
-		Current=false;
-		x=0.5f;y=0.f;z=originPlace;
+		x=0.5f;y=0.f;z=Constants.originPlace;
 	}
     final void setActivity(ComponentName className, int launchFlags) {
         intent = new Intent(Intent.ACTION_MAIN);
@@ -90,13 +74,21 @@ class ApplicationInfo {
         intent.setComponent(className);
         intent.setFlags(launchFlags);
     }
-    public void setCurrent(boolean cur)
+    public void setIntent(Intent intent)
     {
-    	this.Current=cur;
+    	this.intent=intent;
     }
-    public boolean getCurrent()
+    public void resetToFrontPlace()
     {
-    	return this.Current;
+    	x=0.5f;y=0.f;z=Constants.disapearedPlace;
+    }
+    public void resetToBackPlace()
+    {
+    	x=0.5f;y=0.f;z=Constants.originPlace;
+    }
+    public void resetToCenterPlace()
+    {
+    	x=0.5f;y=0.f;z=Constants.displayedPlace;
     }
     public void setIndex(int index)
     {
@@ -106,50 +98,19 @@ class ApplicationInfo {
     {
 		this.texID = texID;
     }
+    public int getReady()
+    {
+    	return texID;
+    }
     public void setZ(float z)
     {
-    	this.z=((float)Math.floor(z * 100))/100.f;
+    	this.z=z;
     }
     public float getZ()
     {
     	return z;
     }
-    public static void setState(int state)
-    {
-    	ApplicationInfo.state = state;
-    }
-    public static int getState()
-    {
-    	return ApplicationInfo.state;
-    }
-    public static int getDirection()
-    {
-    	return ApplicationInfo.direction;
-    }
-    public static float getDistance()
-    {
-    	return ApplicationInfo.remainedDistance;
-    }
-    public static void setDistance(float distance)
-    {
-    	ApplicationInfo.remainedDistance=distance;
-    }
-    public static void setDirection(int direction)
-    {
-    	ApplicationInfo.direction=direction;
-    }
-    public void setUnLoadingState()
-    {
-    	Log.d("unloadingState", "setUnloadingstate"+index);
-    	if(this.texID !=-1)
-    		GLRenderer.unSetTexID(this.texID);
-    	this.texID=-1;
-    	x=0.5f; y= 0.f;
-    	if(z <= originPlace)
-    		z= originPlace;
-    	else if( z >= disapearedPlace)
-    		z= disapearedPlace;
-    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -178,7 +139,10 @@ class ApplicationInfo {
     {
     	ApplicationInfo.offset=offset;
     }
-
+    public static float getOffset()
+    {
+    	return ApplicationInfo.offset;
+    }
     public boolean IsReadyToMove()
     {
     	if(texID == -1)
@@ -197,47 +161,40 @@ class ApplicationInfo {
 		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER,GL10.GL_NEAREST);
 		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
 
-		if(state == GLView.Scrolling)
-		{
-			z+=offset;
-			z=((float)Math.floor(z * 100))/100.f;
-			Log.d(TAG,"scrolling"+index+" z: "+z);
-		}
-		else if(state == GLView.Swipe)
-		{
-			z+=offset;
-			z=((float)Math.floor(z * 100))/100.f;
-			Log.d(TAG,"swipe"+index+" z: "+z);
-		}
+		z+=offset;
+		z=(float)Math.round(z * 100)/100;
+		Log.d(TAG,"swipe"+index+" z: "+z);
+			
 		gl.glTranslatef(x, y, z); 
 		
 //		checkState();
-		if( z > displayedPlace)
-			gl.glColor4f(0.5f, 0.5f, 0.5f, (disapearedPlace - z) / alphaDownRegion);
+		if( z > Constants.displayedPlace)
+			gl.glColor4f(0.5f, 0.5f, 0.5f, (Constants.disapearedPlace - z) / Constants.alphaDownRegion);
 		else
 			gl.glColor4f(0.5f, 0.5f, 0.5f, 1.f);
 		gl.glScalef(10, 10, 10);
-		if(z > originPlace && z < disapearedPlace )
+		if(z > Constants.originPlace && z < Constants.disapearedPlace )
 		{
 			Log.d(TAG, "image"+index);
 			GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0); 
 			gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
 		}
+		
+		if(ApplicationInfo.IsScrolling == false)
+			checkArrived();
 		gl.glPopMatrix();
 		bitmap.recycle();
 
  	}
- 	private void checkState()
+ 	private void checkArrived()
  	{
- 		if( state == GLView.Swipe && (z>= disapearedPlace || z <= originPlace))
+ 		if(z >= Constants.disapearedPlace || z <= Constants.originPlace)
  		{
- 			setUnLoadingState();
+ 			ApplicationInfo.IsArrived=true;
  		}
  	}
-	public static void setIndexs(int preIndex, int curIndex, int nextIndex) {
-		// TODO Auto-generated method stub
-		ApplicationInfo.PreIndex=preIndex;
-		ApplicationInfo.CurIndex=curIndex;
-		ApplicationInfo.NextIndex=nextIndex;
+	private float floorby2(float f)
+	{
+		return ((float)Math.floor(f*100))/100;
 	}
 }

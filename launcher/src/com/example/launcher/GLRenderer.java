@@ -11,10 +11,10 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.example.Camera.CameraActivity;
 import com.example.Voice.VoiceActivity;
 import com.example.Voice.VoiceCommandListActivity;
 import com.example.Voice.VoiceListenerService;
-
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -25,6 +25,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.nfc.cardemulation.OffHostApduService;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.Log;
@@ -36,24 +37,17 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	private GLView glview;
 	private FloatBuffer texBuffer;
 	private FloatBuffer vertexBuffer;
-	
 	public final static int MAX_MODEL_NUM=10;
 	public final static int NO_TEXTURE_AVAILABLE=-1;
-	public final static int NO_INDEX=-2;
-	public static boolean completed=false;
-	
+	public final static int NO_INDEX=-2;	
 	private List<ApplicationInfo> mApplications;
 	private static int[] texIDS=new int[MAX_MODEL_NUM];
 	private static boolean[] ListcheckID=new boolean[MAX_MODEL_NUM]; 
 	private int CurIndex=0;
-	private int NextIndex=0;
-	private int PreIndex=0;
-	private float offset=0;
-	private float remainedDistance;
-	private int direction;
-	private int state;
+	private DrawThread thread;
 	public static boolean IsReached=false;
-	
+	private boolean IsFirst=true;
+	private List<DrawThread> ThreadList=new ArrayList<DrawThread>();
 	private float[] texCoords = { // Texture coords for the above face (NEW)
 			0.0f, 1.0f, // A. left-bottom (NEW)
 			1.0f, 1.0f, // B. right-bottom (NEW)
@@ -75,14 +69,15 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		init_Values();
 		init_buffer();
 		loadApplications(false); 
-		init_CurEntity();
+		setTexId(CurIndex);
+		mApplications.get(CurIndex).setZ(Constants.displayedPlace);
 	}
-	private void init_CurEntity()
+	private void setTexId(int index)
 	{
 		int texID=getID();
-		mApplications.get(CurIndex).setCurrent(true);
-		mApplications.get(CurIndex).setReady(texID);
-		ListcheckID[texID]=false;
+		Log.d(TAG, "setTexId:"+texID);
+		mApplications.get(index).setReady(texID);
+		ListcheckID[texID]=true;
 	}
 	private void init_Values()
 	{
@@ -91,6 +86,25 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 			ListcheckID[i]=false;
 			texIDS[i]=0;
 		}
+		Log.d(TAG, "init_values"+ListcheckID);
+	}
+	private int getPreIndex()
+	{
+		int preIndex=CurIndex -1;
+		if(preIndex < 0)
+			return mApplications.size() -1;
+		return preIndex;
+	}
+	private int getNextIndex()
+	{
+		int nextIndex=CurIndex +1;
+		if(nextIndex >= mApplications.size())
+			return 0;
+		return nextIndex;
+	}
+	public DrawThread getDrawThread()
+	{
+		return this.thread;
 	}
 	private void init_buffer()
 	{
@@ -112,14 +126,6 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		for(int i=0;i<MAX_MODEL_NUM;i++)
 			texBuffer.put(texCoords);
 		texBuffer.position(0);
-	}
-	public float getGap(int CurIndex)
-	{
-		return mApplications.get(CurIndex).getZ()- ApplicationInfo.displayedPlace;
-	}
-	public int getAppSize()
-	{
-		return mApplications.size();
 	}
 	public void loadApplications(boolean isLaunching)
 	{
@@ -163,32 +169,36 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	                mApplications.add(application);
 	                application.setIndex(mApplications.size()-1);  
 	            }
+	            addVoiceApp();
 	        }
-	        Log.d("service", "ser mAppl:"+mApplications);
-	}
-	public float getCurZ(int cur)
-	{
-		return mApplications.get(cur).getZ();
 	}
 	
+	private void addVoiceApp() {
+		// TODO Auto-generated method stub
+		ApplicationInfo application = new ApplicationInfo();
+		application.title = "Camera";
+        application.icon = context.getResources().getDrawable(R.drawable.ic_camera_50);
+        Intent intent=new Intent(context,CameraActivity.class);
+        application.setIntent(intent);
+        mApplications.add(application);
+        application.setIndex(mApplications.size()-1); 
+        
+		application = new ApplicationInfo();
+		application.title = "Google";
+		intent=new Intent("com.google.glass.action.START_VOICE_SEARCH_ACTIVITY");
+		application.setIntent(intent);
+        application.icon = context.getResources().getDrawable(R.drawable.ic_search_50);
+        mApplications.add(application);
+        application.setIndex(mApplications.size()-1); 
+	}
 	public void performClick()
 	{
 		if (CurIndex == -1) {
 			Log.d("performClick", "error curIndex is -1");
 			return ;
 		}
-		
-		Intent intent = mApplications.get(ApplicationInfo.CurIndex).intent;
+		Intent intent = mApplications.get(CurIndex).intent;
 		context.startActivity(intent);
-	}
-	public void performDoubleClick()
-	{
-		Intent i=new Intent(context,VoiceCommandListActivity.class);
-		context.startActivity(i);
-	}
-	public void setOffset(float offset)
-	{
-		this.offset=offset;
 	}
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -216,10 +226,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 
 //		glview.loadTexture(gl);    // Load image into Texture (NEW)
 		gl.glEnable(gl.GL_TEXTURE_2D);  // Enable texture (NEW)
-		if(glview.isFirst)
-		{
-			glview.init_moving();
-		}
+		
 	}
 
 	@Override
@@ -249,6 +256,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	{
 		for(int index=0; index < MAX_MODEL_NUM ; index++)
 		{
+			Log.d(TAG, "getId "+index+" : "+ListcheckID[index]);
 			if(ListcheckID[index]==false)
 			{
 				return index;
@@ -259,130 +267,115 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 
 	private void DrawObjects(GL10 gl) 
 	{
-		Log.d(TAG, "drawObjects - pre:"+ApplicationInfo.PreIndex+" next:"+ ApplicationInfo.NextIndex+ " Cur:"+ApplicationInfo.CurIndex);
-			if(glview.isFirst)
-				mApplications.get(0).draw(gl);
-			else if(ApplicationInfo.getState() == GLView.Swipe)
+		if (IsFirst) {
+			mApplications.get(CurIndex).draw(gl);
+			IsFirst = false;
+		} else {
+			checkOffset();
+			Log.d(TAG, "DrawObjects offset:"+ApplicationInfo.getOffset());
+			if (mApplications.get(CurIndex).getZ() > Constants.displayedPlace) {
+				Log.d(TAG, "DrawObjects next:"+getNextIndex());
+				mApplications.get(getNextIndex()).draw(gl);
+				mApplications.get(CurIndex).draw(gl);
+			} else if (mApplications.get(CurIndex).getZ() < Constants.displayedPlace) {
+				Log.d(TAG, "DrawObjects pre:"+getPreIndex());
+				mApplications.get(getPreIndex()).draw(gl);
+				mApplications.get(CurIndex).draw(gl);
+			}
+			else 
 			{
-				if(ApplicationInfo.getDirection() == GLView.BackwardSwipe)
-				{	
-					mApplications.get(ApplicationInfo.NextIndex).draw(gl);
-					mApplications.get(ApplicationInfo.CurIndex).draw(gl);
-				}
-				else if(ApplicationInfo.getDirection() == GLView.ForwardSwipe)
+				if(ApplicationInfo.getOffset() >=0)
 				{
-					mApplications.get(ApplicationInfo.PreIndex).draw(gl);
-					mApplications.get(ApplicationInfo.CurIndex).draw(gl);
+					mApplications.get(getNextIndex()).draw(gl);
+					mApplications.get(CurIndex).draw(gl);
+				}
+				else
+				{
+					mApplications.get(getPreIndex()).draw(gl);
+					mApplications.get(CurIndex).draw(gl);
 				}
 			}
-			else if(ApplicationInfo.getState() == GLView.Scrolling)
-			{
-				if(ApplicationInfo.getDirection() == GLView.BackwardSwipe)
-				{	
-					mApplications.get(ApplicationInfo.CurIndex).draw(gl);
-					mApplications.get(ApplicationInfo.PreIndex).draw(gl);
-				}
-				else if(ApplicationInfo.getDirection() == GLView.ForwardSwipe)
-				{
-					mApplications.get(ApplicationInfo.CurIndex).draw(gl);
-					mApplications.get(ApplicationInfo.NextIndex).draw(gl);
-				}
+			if (ApplicationInfo.IsScrolling == false) {
+				checkIfArrived();
 			}
-		
+		}
 	}
-	private void setMovingOffset()
+	private void checkOffset() {
+		// TODO Auto-generated method stub
+		float CurZ=mApplications.get(CurIndex).getZ();
+		float diff=0;
+		float offset=ApplicationInfo.getOffset();
+		Log.d(TAG, "checkOffset: "+ApplicationInfo.Destination);
+		if(ApplicationInfo.IsScrolling)
+		{
+			if(offset > 0 && CurZ < Constants.displayedPlace 
+					&& (diff=glview.floorby2(Constants.displayedPlace - CurZ)) < offset)
+			{
+				offset=diff;
+			}
+			else if(offset < 0 && CurZ > Constants.displayedPlace 
+					&& (diff=glview.floorby2(CurZ - Constants.displayedPlace)) < offset)
+			{
+				offset=-diff;
+			}
+			ApplicationInfo.setOffset(offset);
+			return ;
+		}
+ 		switch(ApplicationInfo.Destination)
+ 		{
+ 		case Constants.TO_BACK:
+ 			if((diff=glview.floorby2(CurZ - Constants.originPlace)) < offset)
+ 				offset=-diff;
+ 			break;
+ 		case Constants.TO_BACKWARD_CENTER:
+ 			if((diff=glview.floorby2(CurZ - Constants.displayedPlace)) < offset)
+ 				offset=-diff;
+ 			break;
+ 		case Constants.TO_FORWARD_CENTER:
+ 			if((diff=glview.floorby2(Constants.displayedPlace - CurZ)) < offset)
+ 				offset=diff;
+ 			break;
+ 		case Constants.TO_FRONT:
+ 			if((diff=glview.floorby2(Constants.disapearedPlace - CurZ)) < offset)
+ 				offset=diff;
+ 			break;
+ 		}
+ 		ApplicationInfo.setOffset(offset);
+	}
+	private void checkIfArrived()
 	{
-//		float distance = ApplicationInfo.getDistance();
-		float z= mApplications.get(ApplicationInfo.CurIndex).getZ();
-		
-		float offset=0;
-		
-		if(ApplicationInfo.getDirection() == GLView.BackwardSwipe)
+		if(ApplicationInfo.IsArrived)
 		{
-			offset=z - ApplicationInfo.displayedPlace;
-			if(offset >= ApplicationInfo.speed)
-				ApplicationInfo.setOffset(-ApplicationInfo.speed);
-			else if(offset < ApplicationInfo.speed && offset > 0)
-				ApplicationInfo.setOffset(-offset);
-			else if(offset <= 0)
+			changeCurIndex();
+			mApplications.get(CurIndex).resetToCenterPlace();
+			mApplications.get(getNextIndex()).resetToBackPlace();
+			mApplications.get(getPreIndex()).resetToFrontPlace();
+			ApplicationInfo.setOffset(0.f);
+			ApplicationInfo.Destination=Constants.NO_DESTINATION;
+			if(ThreadList.size() > 0 && ThreadList.get(0).getFlag())
 			{
-				ApplicationInfo.setOffset(0.f);
-				IsReached=true;
+				ThreadList.get(0).setFlag(false);
+				ThreadList.remove(0);
 			}
+			Log.d(TAG, "ifArrived: "+ApplicationInfo.Destination);
 		}
-		else if(ApplicationInfo.getDirection() == GLView.ForwardSwipe)
+	}
+	private void changeCurIndex() {
+		// TODO Auto-generated method stub
+		unSetTexID(mApplications.get(CurIndex).getReady());
+		if(ApplicationInfo.Destination == Constants.TO_FRONT)
 		{
-			offset=ApplicationInfo.displayedPlace - z;
-			if(offset >= ApplicationInfo.speed)
-				ApplicationInfo.setOffset(ApplicationInfo.speed);
-			else if(offset < ApplicationInfo.speed && offset > 0)
-				ApplicationInfo.setOffset(offset);
-			else if(offset <= 0)
-			{
-				ApplicationInfo.setOffset(0.f);
-				IsReached=true;
-			}
+			CurIndex=++CurIndex >= mApplications.size()? 0 : CurIndex;
 		}
-		Log.d(TAG, "cur:"+ApplicationInfo.CurIndex+" z:"+z);
-		Log.d(TAG, "distance :"+offset);
-	//	ApplicationInfo.setDistance(distance);
+		else if(ApplicationInfo.Destination == Constants.TO_BACK)
+		{
+			CurIndex=--CurIndex < 0? mApplications.size()-1 : CurIndex;
+		}
+		Log.d(TAG, "changeCurIndex :"+CurIndex);
 	}
 	public static void unSetTexID(int TexID)
 	{
 		ListcheckID[TexID]=false; 
-	}
-	public void readyToMove(int tmpDirection)
-	{
-		int AppSize=mApplications.size();
-		if(AppSize == 1)
-		{
-			return ;
-		}
-		else if( AppSize ==2)
-		{
-			ApplicationInfo next;
-			if(CurIndex ==0)
-				next=mApplications.get(1);
-			else
-				next=mApplications.get(0);
-			next.setZ(ApplicationInfo.originPlace);
-			if(next.IsReadyToMove() == false)
-			{
-				int texID=getID();
-				next.setReady(texID);
-				ListcheckID[texID]=true;
-			}
-		}
-		else
-		{
-			NextIndex = (ApplicationInfo.CurIndex + 1) >= mApplications.size() ? 0 : (ApplicationInfo.CurIndex + 1);
-			PreIndex = (ApplicationInfo.CurIndex - 1) < 0 ? (mApplications.size() - 1) : (ApplicationInfo.CurIndex - 1);
-			ApplicationInfo preApp = mApplications.get(PreIndex);
-			ApplicationInfo nextApp = mApplications.get(NextIndex);
-			float tmpZ=mApplications.get(ApplicationInfo.CurIndex).getZ();
-			if(tmpDirection == GLView.BackwardSwipe)
-			{
-				preApp.setZ(ApplicationInfo.disapearedPlace +( tmpZ - ApplicationInfo.displayedPlace));
-				Log.d(TAG, "readyToMove setZ backswipe:"+ApplicationInfo.disapearedPlace +( tmpZ - ApplicationInfo.displayedPlace));
-				if (preApp.IsReadyToMove() == false) {
-					int texID = getID();
-					preApp.setReady(texID);
-					ListcheckID[texID] = true;
-				}
-			}
-			else if(tmpDirection == GLView.ForwardSwipe)
-			{
-				nextApp.setZ(ApplicationInfo.originPlace +( tmpZ - ApplicationInfo.displayedPlace));
-				Log.d(TAG, "readyToMove setZ backswipe:"+ApplicationInfo.originPlace +( tmpZ - ApplicationInfo.displayedPlace));
-				if (nextApp.IsReadyToMove() == false) {
-					int texID = getID();
-					nextApp.setReady(texID);
-					ListcheckID[texID] = true;
-				}
-			}
-
-		}
-		Log.d(TAG, "readyToMove - pre:"+PreIndex+" next:"+ NextIndex+ " Cur:"+CurIndex);
 	}
 
 	@Override
@@ -390,31 +383,8 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		// TODO Auto-generated method stub
 
 		Log.d(TAG, "onDrawFrame"	);
-		ApplicationInfo.setOffset(offset);
-		ApplicationInfo.setDirection(direction);
-//		ApplicationInfo.setDistance(remainedDistance);
-		ApplicationInfo.setState(state);
-		ApplicationInfo.setIndexs(PreIndex,CurIndex,NextIndex);
-		if (ApplicationInfo.getState() == GLView.Swipe) {
-			if (IsReached== false) {
-//				Log.d(TAG, "thread if");
-				setMovingOffset();
-			} else {
-				if (glview.isFirst) {
-					glview.isFirst = false;
-				}
-//				Log.d(TAG, "thread else");
-				IsReached=false;
-				glview.mDrawThread.IsRun = false;
-				ApplicationInfo.setOffset(0.0f);
-		//		ApplicationInfo.setState(GLView.NoState);
-		//		return ;
-			}
-		}
 			setGL(gl);
-//			Log.d(TAG, "after setGL");
 			DrawObjects(gl);
-//			Log.d(TAG, "after DrawObjects");
 			unSetGl(gl);
 	}
 	private void setGL(GL10 gl)
@@ -444,26 +414,86 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	    gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 	    gl.glDisable(GL10.GL_CULL_FACE);
 	}
-	public void setDrawApps(int pre,int cur, int next) {
+	public void setWhereToGo() {
 		// TODO Auto-generated method stub
-		mApplications.get(cur).setCurrent(false);
-		
-		this.CurIndex=cur;
-		if(pre != -1)
-			this.PreIndex=pre;
-		if(next != -1)
-			this.NextIndex=next;
-		
-		mApplications.get(cur).setCurrent(true);
-		Log.d(TAG, "setDrawApps- pre:"+PreIndex+" next"+NextIndex+" Cur:"+CurIndex);
+		float diffZ=mApplications.get(CurIndex).getZ() - Constants.displayedPlace;
+		if( Math.abs(diffZ) < Constants.threshold)
+		{
+			if(diffZ >=0)
+				goTo(Constants.TO_BACKWARD_CENTER);
+			else
+				goTo(Constants.TO_FORWARD_CENTER);
+		}
+		else if( diffZ >= 0)  // go to disappeared place
+		{
+			goTo(Constants.TO_FRONT);
+		}
+		else if( diffZ < 0)   // go to origin place
+		{
+			goTo(Constants.TO_BACK);
+		}
+	}
+	public void goTo(int destination) {
+		// TODO Auto-generated method stub
+		if(destination == Constants.TO_BACKWARD_CENTER || destination == Constants.TO_BACK)
+			Move(-Constants.speed);
+		else 
+			Move(Constants.speed);
+		ApplicationInfo.IsArrived=false;
+		ApplicationInfo.Destination=destination;
+		thread=new DrawThread(glview);
+		ThreadList.add(thread);
+		thread.start();
+	}
+	public void goToVoiceIcon(String command)
+	{
+		while(mApplications.get(CurIndex).title.equals(command)==false)
+		{
+			Move(Constants.anim_speed);
+			ApplicationInfo.IsArrived = false;
+			ApplicationInfo.Destination = Constants.TO_FRONT;
+			thread=new DrawThread(glview);
+			ThreadList.add(thread);
+			thread.start();
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 	}
-	public void setDistance(int direction) {
+	public void Move(float offset) {
 		// TODO Auto-generated method stub
-		this.direction=direction;
+		if(mApplications.get(CurIndex).getZ() == Constants.displayedPlace)
+		{
+			Log.d(TAG, "Move offset:"+offset);
+			if(offset > 0)
+			{
+				setReadyNext();
+			}
+			else if(offset < 0)
+			{
+				setReadyPre();
+			}
+		}
+		ApplicationInfo.setOffset(offset);
 	}
-	public void setState(int state) {
+	private void setReadyPre() {
 		// TODO Auto-generated method stub
-		this.state=state;
+		int preIndex=getPreIndex();
+		Log.d(TAG, "setReadyPre: "+preIndex);
+		mApplications.get(preIndex).resetToFrontPlace();
+		if(mApplications.get(preIndex).getReady() ==-1)
+			setTexId(preIndex);
+	}
+	private void setReadyNext() {
+		// TODO Auto-generated method stub
+		int nextIndex=getNextIndex();
+		Log.d(TAG, "setReadyNext: "+nextIndex);
+		mApplications.get(nextIndex).resetToBackPlace();
+		if(mApplications.get(nextIndex).getReady() == -1)
+			setTexId(nextIndex);
 	}
 }

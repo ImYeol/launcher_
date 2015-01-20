@@ -49,7 +49,7 @@ public class ImageCommentDialog extends VoiceActivity {
 		commentView.setText("");
 		framelayout=(FrameLayout)findViewById(R.id.comment_layout);
 		Uri=getIntent().getExtras().getString("Uri");
-		CommandList=new String[]{"yes","No","finish"};
+		CommandList=new String[]{"yes","No","clear","finish"};
 		mGestureDetector=createGestureDetector(this);
 	}
 	@Override
@@ -63,7 +63,7 @@ public class ImageCommentDialog extends VoiceActivity {
 				@Override
 				public void run() {
 					// TODO Auto-generated method stub
-					commentView.setText(cmd);
+					commentView.append(cmd);
 				}
 			});
 		}
@@ -107,6 +107,21 @@ public class ImageCommentDialog extends VoiceActivity {
 			}
 			else if(id == 2)
 			{
+				IsCommandRecognized=true;
+				IsOnDialog = false;
+				ReSetCommands();
+				runOnUiThread(new Runnable() {
+					
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						endOfSpeechDialog.setVisibility(View.GONE);
+						commentView.setText("");
+					}
+				});
+			}
+			else if(id == 3)
+			{
 				runOnUiThread(new Runnable() {
 					
 					@Override
@@ -131,7 +146,7 @@ public class ImageCommentDialog extends VoiceActivity {
 					// TODO Auto-generated method stub
 					if (endOfSpeechDialog == null) {
 						endOfSpeechDialog = WarningDialog.getInstance().setLayout(ImageCommentDialog.this, framelayout)
-								.setText("You want to send message?", "Yes : No : Finish").build();
+								.setText("You want to send message?", "Yes : No : Clear : Finish").build();
 					}
 					else
 						endOfSpeechDialog.setVisibility(View.VISIBLE);
