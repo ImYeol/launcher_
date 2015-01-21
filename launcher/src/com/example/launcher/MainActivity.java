@@ -42,7 +42,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 
-public class MainActivity extends Activity {
+public class MainActivity extends VoiceActivity {
 	
 	public static GLView glview;
 	@Override
@@ -50,19 +50,18 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		glview=new GLView(this);
 		setContentView(glview);
-	//	CommandList=new String[]{"camera","google","command"};
-		//startService(new Intent(this,VoiceListenerService.class));
+		CommandList=new String[]{"camera","google","command"};
+		startService(new Intent(this,VoiceListenerService.class));
 	}
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		//stopService(new Intent(this,VoiceListenerService.class));
+		stopService(new Intent(this,VoiceListenerService.class));
 	}
-/*	
+	
 	@Override
 	public void onVoiceCommand(String command) {
-		final String cmd=command;
 	}
 	@Override
 	public void onVoiceCommand(int cmdId) {
@@ -75,12 +74,14 @@ public class MainActivity extends Activity {
 				// TODO Auto-generated method stub
 				if(id == 0) // camera
 				{
+					glview.animationFor("Camera");
 					UnBindService();
 					Intent intent=IntentBuilder.CreateIntent(MainActivity.this, CameraActivity.class).build();
 					IntentBuilder.startActivity(MainActivity.this, intent);
 				}
 				else if(id == 1)  // google
 				{
+					glview.animationFor("Google");
 					UnBindService();
 					Intent intent=new Intent("com.google.glass.action.START_VOICE_SEARCH_ACTIVITY");
 					startActivity(intent);
@@ -93,5 +94,5 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
-	}*/
+	}
 }

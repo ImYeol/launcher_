@@ -61,6 +61,8 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 			1.0f, 1.0f, 0.0f // 3. right-top-front
 	};
 	private PackageManager manager;
+	private int distance=0;
+	
 	
 	public GLRenderer(Context context,GLView glview)
 	{
@@ -69,8 +71,18 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		init_Values();
 		init_buffer();
 		loadApplications(false); 
+		init_readyToMove();
+	}
+	private void init_readyToMove()
+	{
+		int pre=getPreIndex();
+		int next=getNextIndex();
 		setTexId(CurIndex);
 		mApplications.get(CurIndex).setZ(Constants.displayedPlace);
+		setTexId(pre);
+		mApplications.get(pre).setZ(Constants.disapearedPlace);
+		setTexId(next);
+		mApplications.get(next).setZ(Constants.originPlace);
 	}
 	private void setTexId(int index)
 	{
@@ -179,6 +191,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		application.title = "Camera";
         application.icon = context.getResources().getDrawable(R.drawable.ic_camera_50);
         Intent intent=new Intent(context,CameraActivity.class);
+        application.voiceTag=true;
         application.setIntent(intent);
         mApplications.add(application);
         application.setIndex(mApplications.size()-1); 
@@ -187,7 +200,8 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		application.title = "Google";
 		intent=new Intent("com.google.glass.action.START_VOICE_SEARCH_ACTIVITY");
 		application.setIntent(intent);
-        application.icon = context.getResources().getDrawable(R.drawable.ic_search_50);
+		application.voiceTag=true;
+		application.icon = context.getResources().getDrawable(R.drawable.ic_search_50);
         mApplications.add(application);
         application.setIndex(mApplications.size()-1); 
 	}
@@ -344,7 +358,8 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	}
 	private void checkIfArrived()
 	{
-		if(ApplicationInfo.IsArrived)
+		ApplicationInfo cur=mApplications.get(CurIndex);
+		if(cur.getZ() <= Constants.originPlace || cur.getZ()>= Constants.disapearedPlace)
 		{
 			changeCurIndex();
 			mApplications.get(CurIndex).resetToCenterPlace();
@@ -352,7 +367,14 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 			mApplications.get(getPreIndex()).resetToFrontPlace();
 			ApplicationInfo.setOffset(0.f);
 			ApplicationInfo.Destination=Constants.NO_DESTINATION;
-			if(ThreadList.size() > 0 && ThreadList.get(0).getFlag())
+			--distance;
+			if(distance > 0)
+			{
+				Move(Constants.anim_speed);
+				ApplicationInfo.IsArrived = false;
+				ApplicationInfo.Destination = Constants.TO_FRONT;
+			}
+			else if(ThreadList.size() > 0 && distance <=0)
 			{
 				ThreadList.get(0).setFlag(false);
 				ThreadList.remove(0);
@@ -362,14 +384,21 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	}
 	private void changeCurIndex() {
 		// TODO Auto-generated method stub
-		unSetTexID(mApplications.get(CurIndex).getReady());
+		//unSetTexID(mApplications.get(CurIndex).getReady());
+		int TexID=-1;
 		if(ApplicationInfo.Destination == Constants.TO_FRONT)
 		{
 			CurIndex=++CurIndex >= mApplications.size()? 0 : CurIndex;
+			if((TexID=mApplications.get(getPreIndex()).getReady()) != -1)
+				unSetTexID(TexID);
+ 			mApplications.get(getPreIndex()).setReady(-1);
 		}
 		else if(ApplicationInfo.Destination == Constants.TO_BACK)
 		{
 			CurIndex=--CurIndex < 0? mApplications.size()-1 : CurIndex;
+			if((TexID=mApplications.get(getNextIndex()).getReady()) != -1)
+				unSetTexID(TexID);
+			mApplications.get(getNextIndex()).setReady(-1);
 		}
 		Log.d(TAG, "changeCurIndex :"+CurIndex);
 	}
@@ -435,34 +464,36 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	}
 	public void goTo(int destination) {
 		// TODO Auto-generated method stub
+		distance=1;
+		float speed=0;
 		if(destination == Constants.TO_BACKWARD_CENTER || destination == Constants.TO_BACK)
-			Move(-Constants.speed);
-		else 
-			Move(Constants.speed);
+		{
+			speed=-Constants.speed;
+			Move(speed);
+		}
+		else
+		{
+			speed=Constants.speed;
+			Move(speed);
+		}
+		Log.d(TAG, "goTo IsArrived: "+ApplicationInfo.IsArrived);
 		ApplicationInfo.IsArrived=false;
 		ApplicationInfo.Destination=destination;
 		thread=new DrawThread(glview);
+		thread.setRenderingCount(destination, mApplications.get(CurIndex).getZ(),speed);
 		ThreadList.add(thread);
 		thread.start();
 	}
 	public void goToVoiceIcon(String command)
 	{
-		while(mApplications.get(CurIndex).title.equals(command)==false)
-		{
+		this.distance=caculateToVoiceIcon(command);
 			Move(Constants.anim_speed);
 			ApplicationInfo.IsArrived = false;
 			ApplicationInfo.Destination = Constants.TO_FRONT;
 			thread=new DrawThread(glview);
+			thread.setRenderingCount(Constants.TO_FRONT, mApplications.get(CurIndex).getZ(), Constants.anim_speed);
 			ThreadList.add(thread);
 			thread.start();
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
 	}
 	public void Move(float offset) {
 		// TODO Auto-generated method stub
@@ -495,5 +526,19 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		mApplications.get(nextIndex).resetToBackPlace();
 		if(mApplications.get(nextIndex).getReady() == -1)
 			setTexId(nextIndex);
+	}
+	private int caculateToVoiceIcon(String command)
+	{
+		int cur=CurIndex;
+		for(int i=0;i<mApplications.size();i++)
+		{
+			cur=++cur >= mApplications.size() ? 0:cur;
+			ApplicationInfo info=mApplications.get(cur);
+			if(info.voiceTag && info.title.equals(command))
+			{
+				return ++i;
+			}
+		}
+		return -1;
 	}
 }

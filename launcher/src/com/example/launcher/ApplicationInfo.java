@@ -47,7 +47,7 @@ class ApplicationInfo {
     /**
      * When set to true, indicates that the icon has been resized.
      */
-    boolean filtered;
+    boolean voiceTag=false;
     
     private static float offset=0.f;
     public static int Destination=Constants.NO_DESTINATION;

@@ -74,7 +74,7 @@ public class GLView extends GLSurfaceView {
 					if(gesture == Gesture.TAP)
 					{
 						//renderer.performClick();
-						animationFor("Google");
+				//		animationFor("Google");
 					}
 					return false;
 				}				
