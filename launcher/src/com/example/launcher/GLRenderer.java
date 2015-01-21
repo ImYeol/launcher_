@@ -15,6 +15,8 @@ import com.example.Camera.CameraActivity;
 import com.example.Voice.VoiceActivity;
 import com.example.Voice.VoiceCommandListActivity;
 import com.example.Voice.VoiceListenerService;
+import com.google.android.glass.media.Sounds;
+
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -25,6 +27,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.nfc.cardemulation.OffHostApduService;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
@@ -48,6 +51,8 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	public static boolean IsReached=false;
 	private boolean IsFirst=true;
 	private List<DrawThread> ThreadList=new ArrayList<DrawThread>();
+	private AudioManager audio;
+	
 	private float[] texCoords = { // Texture coords for the above face (NEW)
 			0.0f, 1.0f, // A. left-bottom (NEW)
 			1.0f, 1.0f, // B. right-bottom (NEW)
@@ -62,7 +67,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	};
 	private PackageManager manager;
 	private int distance=0;
-	
+	private Intent VoiceCommandStartIntent=new Intent(Constants.VoiceCommandAction);
 	
 	public GLRenderer(Context context,GLView glview)
 	{
@@ -72,6 +77,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 		init_buffer();
 		loadApplications(false); 
 		init_readyToMove();
+		audio=(AudioManager)context.getSystemService(context.AUDIO_SERVICE);
 	}
 	private void init_readyToMove()
 	{
@@ -211,6 +217,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 			Log.d("performClick", "error curIndex is -1");
 			return ;
 		}
+		audio.playSoundEffect(Sounds.SELECTED);
 		Intent intent = mApplications.get(CurIndex).intent;
 		context.startActivity(intent);
 	}
@@ -371,17 +378,23 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 			if(distance > 0)
 			{
 				Move(Constants.anim_speed);
-				ApplicationInfo.IsArrived = false;
 				ApplicationInfo.Destination = Constants.TO_FRONT;
 			}
 			else if(ThreadList.size() > 0 && distance <=0)
 			{
-				ThreadList.get(0).setFlag(false);
 				ThreadList.remove(0);
+				if(mApplications.get(CurIndex).voiceTag)
+					broadcastVoiceCommandAction();
 			}
 			Log.d(TAG, "ifArrived: "+ApplicationInfo.Destination);
 		}
 	}
+	private void broadcastVoiceCommandAction() {
+		// TODO Auto-generated method stub
+		VoiceCommandStartIntent.putExtra("command", mApplications.get(CurIndex).title);
+		context.sendBroadcast(VoiceCommandStartIntent);
+	}
+	
 	private void changeCurIndex() {
 		// TODO Auto-generated method stub
 		//unSetTexID(mApplications.get(CurIndex).getReady());
@@ -476,22 +489,21 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 			speed=Constants.speed;
 			Move(speed);
 		}
-		Log.d(TAG, "goTo IsArrived: "+ApplicationInfo.IsArrived);
-		ApplicationInfo.IsArrived=false;
 		ApplicationInfo.Destination=destination;
 		thread=new DrawThread(glview);
-		thread.setRenderingCount(destination, mApplications.get(CurIndex).getZ(),speed);
+		thread.setRenderingCount(destination, mApplications.get(CurIndex).getZ(),speed,distance);
 		ThreadList.add(thread);
 		thread.start();
 	}
 	public void goToVoiceIcon(String command)
 	{
 		this.distance=caculateToVoiceIcon(command);
+		Log.d(TAG, "goToVoiceIcon cnt:"+distance);
 			Move(Constants.anim_speed);
-			ApplicationInfo.IsArrived = false;
 			ApplicationInfo.Destination = Constants.TO_FRONT;
 			thread=new DrawThread(glview);
-			thread.setRenderingCount(Constants.TO_FRONT, mApplications.get(CurIndex).getZ(), Constants.anim_speed);
+			thread.setRenderingCount(Constants.TO_FRONT, mApplications.get(CurIndex).getZ(), 
+					Constants.anim_speed,distance);
 			ThreadList.add(thread);
 			thread.start();
 	}

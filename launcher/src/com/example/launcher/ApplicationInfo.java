@@ -55,7 +55,6 @@ class ApplicationInfo {
 	private int texID=-1;
 	private float x,y,z;
 	private int index=0;
-	public static boolean IsArrived=false;
 	public static boolean IsScrolling=false;
     /**
      * Creates the application intent based on a component name and various launch flags.
@@ -180,19 +179,11 @@ class ApplicationInfo {
 			gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
 		}
 		
-		if(ApplicationInfo.IsScrolling == false)
-			checkArrived();
 		gl.glPopMatrix();
 		bitmap.recycle();
 
  	}
- 	private void checkArrived()
- 	{
- 		if(z >= Constants.disapearedPlace || z <= Constants.originPlace)
- 		{
- 			ApplicationInfo.IsArrived=true;
- 		}
- 	}
+
 	private float floorby2(float f)
 	{
 		return ((float)Math.floor(f*100))/100;

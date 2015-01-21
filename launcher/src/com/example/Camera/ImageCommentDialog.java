@@ -38,6 +38,7 @@ public class ImageCommentDialog extends VoiceActivity {
 	private View endOfSpeechDialog;
 	private boolean IsCommandRecognized=false;
 	private FrameLayout framelayout;
+	private String preString="";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,15 +56,14 @@ public class ImageCommentDialog extends VoiceActivity {
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
-		final String cmd=command;
+		final String cmd=preString+" "+command;
 		if(IsOnDialog == false)
 		{
 			runOnUiThread(new Runnable() {
-				
 				@Override
 				public void run() {
 					// TODO Auto-generated method stub
-					commentView.append(cmd);
+					commentView.setText(cmd);
 				}
 			});
 		}
@@ -73,7 +73,7 @@ public class ImageCommentDialog extends VoiceActivity {
 		// TODO Auto-generated method stub
 		if (IsCommandRecognized == false) {
 			final int id=cmdId;
-			if (id == 0) {
+			if (id == 0) {    // yes
 				IsCommandRecognized=true;
 				IsOnDialog = false;
 				ReSetCommands();
@@ -90,9 +90,10 @@ public class ImageCommentDialog extends VoiceActivity {
 						.setUri(Uri).setComment(comment).build();
 				IntentBuilder.startActivityForResult(this, intent);
 				
-			} else if (id == 1) {
+			} else if (id == 1) {   // No
 				IsCommandRecognized=true;
 				IsOnDialog = false;
+				preString=commentView.getText().toString();
 				ReSetCommands();
 				runOnUiThread(new Runnable() {
 					
@@ -105,10 +106,11 @@ public class ImageCommentDialog extends VoiceActivity {
 			//	ReStartListening();
 				Log.d(TAG, "No called");
 			}
-			else if(id == 2)
+			else if(id == 2)   // clear
 			{
 				IsCommandRecognized=true;
 				IsOnDialog = false;
+				preString="";
 				ReSetCommands();
 				runOnUiThread(new Runnable() {
 					
@@ -120,7 +122,7 @@ public class ImageCommentDialog extends VoiceActivity {
 					}
 				});
 			}
-			else if(id == 3)
+			else if(id == 3)  // finish
 			{
 				runOnUiThread(new Runnable() {
 					

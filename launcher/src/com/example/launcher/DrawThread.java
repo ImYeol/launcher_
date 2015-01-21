@@ -4,24 +4,14 @@ import android.util.Log;
 
 
 public class DrawThread extends Thread {
-	private boolean IsRun;
 	private GLView glview;
 	private static final String TAG="DrawThread";
 	private int RenderingCount;
 	
 	public DrawThread(GLView glView)
 	{
-		this.IsRun=true;
 		this.glview=glView;
 		this.RenderingCount=0;
-	}
-	public void setFlag(boolean IsRun)
-	{
-		this.IsRun=IsRun;
-	}
-	public boolean getFlag()
-	{
-		return IsRun;
 	}
 	public void run() {
 		while (RenderingCount > 0) {
@@ -36,21 +26,21 @@ public class DrawThread extends Thread {
 		}
 	}
 	
-	public void setRenderingCount(int destination,float z,float speed)
+	public void setRenderingCount(int destination,float z,float speed,int distance)
 	{
 		switch(destination)
 		{
 		case Constants.TO_BACK:
-			this.RenderingCount=caculateCount(Constants.originPlace,z,speed);
+			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed);
 			break;
 		case Constants.TO_FORWARD_CENTER:
-			this.RenderingCount=caculateCount(Constants.originPlace,z,speed);
+			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed);
 			break;
 		case Constants.TO_BACKWARD_CENTER:
-			this.RenderingCount=caculateCount(Constants.originPlace,z,speed);
+			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed);
 			break;
 		case Constants.TO_FRONT:
-			this.RenderingCount=caculateCount(Constants.originPlace,z,speed);
+			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed);
 			break;
 		}
 	}

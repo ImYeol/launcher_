@@ -26,4 +26,6 @@ public class Constants {
 	public static final int TO_FRONT=102;
 	public static final int TO_BACK=103;
 	public static final int NO_DESTINATION=104;
+	
+	public static final String VoiceCommandAction="com.example.launcher.VOICE_COMMAND_ACTION";
 }

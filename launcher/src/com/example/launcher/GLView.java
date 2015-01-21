@@ -24,6 +24,7 @@ public class GLView extends GLSurfaceView {
 	private float diffX=0.f;
 	private boolean IsScroll=false;
 	private GestureDetector mGestureDetector;
+	private boolean DoNotReceiveInput=false;
 	
 	public GLView(Context context) {
 		super(context);
@@ -52,10 +53,13 @@ public class GLView extends GLSurfaceView {
 	public void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		Log.d(TAG, "glView onResume");
+		DoNotReceiveInput=false;
 	}
 	public void animationFor(String command)
 	{
 		final String cmd=command;
+		DoNotReceiveInput=true;
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
@@ -63,6 +67,10 @@ public class GLView extends GLSurfaceView {
 				renderer.goToVoiceIcon(cmd);
 			}
 		});
+	}
+	public void resetDoNotReceiveInput()
+	{
+		DoNotReceiveInput=false;
 	}
 	private GestureDetector createGestureDetector(Context context) {
 	    GestureDetector gestureDetector = new GestureDetector(context);
@@ -73,8 +81,7 @@ public class GLView extends GLSurfaceView {
 					// TODO Auto-generated method stub
 					if(gesture == Gesture.TAP)
 					{
-						//renderer.performClick();
-				//		animationFor("Google");
+						renderer.performClick();
 					}
 					return false;
 				}				
@@ -86,6 +93,8 @@ public class GLView extends GLSurfaceView {
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		// TODO Auto-generated method stub
+		if(DoNotReceiveInput)
+			return false;
 		if(mVelocityTracker==null)
 			mVelocityTracker=VelocityTracker.obtain();
 		mVelocityTracker.addMovement(event);

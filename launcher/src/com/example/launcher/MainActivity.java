@@ -16,42 +16,48 @@
 
 package com.example.launcher;
 
-import java.util.ArrayList;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.WindowManager;
 
 import com.example.Camera.CameraActivity;
 import com.example.Voice.VoiceActivity;
 import com.example.Voice.VoiceCommandListActivity;
 import com.example.Voice.VoiceListenerService;
 import com.example.util.IntentBuilder;
-import com.example.util.WarningDialog;
-
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.graphics.Color;
-import android.graphics.PixelFormat;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Messenger;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
-import android.util.Log;
 
 public class MainActivity extends VoiceActivity {
 	
 	public static GLView glview;
+	private final static String TAG="MainActivity";
+	private BroadcastReceiver VoiceCommandAnimFinishReceiver;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		glview=new GLView(this);
 		setContentView(glview);
-		CommandList=new String[]{"camera","google","command"};
+		CommandList=new String[]{"camera","Google","command"};
+		VoiceCommandAnimFinishReceiver=new VoiceCommandStartReceiver();
 		startService(new Intent(this,VoiceListenerService.class));
+	}
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		Log.d(TAG, "Main onResume");
+		glview.resetDoNotReceiveInput();
+		registerReceiver(VoiceCommandAnimFinishReceiver, new IntentFilter(Constants.VoiceCommandAction));
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		unregisterReceiver(VoiceCommandAnimFinishReceiver);
 	}
 	@Override
 	protected void onDestroy() {
@@ -76,15 +82,11 @@ public class MainActivity extends VoiceActivity {
 				{
 					glview.animationFor("Camera");
 					UnBindService();
-					Intent intent=IntentBuilder.CreateIntent(MainActivity.this, CameraActivity.class).build();
-					IntentBuilder.startActivity(MainActivity.this, intent);
 				}
 				else if(id == 1)  // google
 				{
 					glview.animationFor("Google");
 					UnBindService();
-					Intent intent=new Intent("com.google.glass.action.START_VOICE_SEARCH_ACTIVITY");
-					startActivity(intent);
 				}
 				else if(id == 2) // voice
 				{
@@ -94,5 +96,29 @@ public class MainActivity extends VoiceActivity {
 				}
 			}
 		});
+	}
+	public class VoiceCommandStartReceiver extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+			if(intent.getAction().equals(Constants.VoiceCommandAction))
+			{
+				Log.d(TAG, "onReceiver");
+				String command=intent.getExtras().getString("command");
+				if(command.equals("Camera"))
+				{
+					Log.d(TAG, "receiver Camera");
+					Intent localIntent=IntentBuilder.CreateIntent(MainActivity.this, CameraActivity.class).build();
+					IntentBuilder.startActivity(MainActivity.this, localIntent);
+				}
+				else if(command.equals("Google"))
+				{
+					Intent localIntent=new Intent("com.google.glass.action.START_VOICE_SEARCH_ACTIVITY");
+					startActivity(localIntent);
+				}
+			}
+		}
+		
 	}
 }
