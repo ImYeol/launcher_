@@ -17,15 +17,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.Display;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.Camera.TakePictureCallback;
 import com.example.launcher.R;
+import com.google.android.glass.widget.CardScrollView;
+import com.google.android.glass.widget.Slider;
 
 public class ImageTransferHelper extends Activity {
 
@@ -42,12 +48,18 @@ public class ImageTransferHelper extends Activity {
 	private String comment;
 	private ProgressBar fileTransferStateBar;
 
+	private CardScrollView mCardScroller;
+    private Slider mSlider;
+    private Slider.Indeterminate mIndeterminate;
+    private Slider.GracePeriod mGracePeriod;
+    
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.transfer_dialog);
+		setActivitySize();
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		fileTransferStateBar = (ProgressBar) findViewById(R.id.file_transfer_progressbar);
 
@@ -75,7 +87,22 @@ public class ImageTransferHelper extends Activity {
 			}
 		}
 	}
+	private void setActivitySize()
+	{
+		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+		
+		Point size = new Point();
+		display.getSize(size);
+		
+		int width = (int) (size.x * 0.8);
 
+		int height = (int) (size.y * 0.5);  
+
+		getWindow().getAttributes().width = width;
+
+		getWindow().getAttributes().height = height;
+	}
+	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQUEST_TO_ENABLE_BT) {
@@ -114,9 +141,15 @@ public class ImageTransferHelper extends Activity {
 			}
 		}
 	};
-
 	protected void onDestroy() {
 		unregisterReceiver(mReceiver);
+		super.onDestroy();
+	}
+
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
 		if (sock.isConnected()) {
 			try {
 				sock.close();
@@ -125,9 +158,7 @@ public class ImageTransferHelper extends Activity {
 				e.printStackTrace();
 			}
 		}
-		super.onDestroy();
 	}
-
 	// bonded devices are those that have already paired with the current device
 	// sometime in the past (and have not been unpaired)
 	private void getBondedDevices() {
@@ -190,7 +221,7 @@ public class ImageTransferHelper extends Activity {
 			}
 			Log.d(TAG, "success to connect");
 			sock = mmSocket;
-			manageConnectedSocket(mmSocket);
+			manageConnectedSocket(sock);
 		}
 
 		private void manageConnectedSocket(BluetoothSocket socket) {
@@ -208,19 +239,23 @@ public class ImageTransferHelper extends Activity {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			bm.compress(CompressFormat.JPEG, 100, baos);
 			byte[] imageByte = baos.toByteArray();
-			int len;
+			fileTransferStateBar.setMax(imageByte.length);
+			int len=0;
 			final int size = 512;
 			byte[] sendByte = new byte[size];
 			ByteArrayInputStream bais = new ByteArrayInputStream(imageByte);
+			Log.d(TAG, "bais :"+bais	);
 			try {
 				bytesRead = 0;
 				byte[] flagByte=new byte[1];
 				flagByte[0]=0;
 				mOutStream.write(flagByte);
 				mOutStream.flush();
-				
-				byte[] commentByte=comment.getBytes("UTF-8");
-				
+				Log.d(TAG, "aaa");
+				if(comment == null)
+					comment="happ new year";
+				byte[] commentByte=comment.getBytes();
+				Log.d(TAG, "comment :"+comment	);
 				mOutStream.write(commentByte);
 				mOutStream.flush();
 				
@@ -240,6 +275,7 @@ public class ImageTransferHelper extends Activity {
 					} else {
 						mOutStream.write(sendByte);
 					}
+					progressBarHandle.sendEmptyMessage(len);
 					 mOutStream.flush();
 				}
 				flagByte[0]=2;
@@ -251,6 +287,26 @@ public class ImageTransferHelper extends Activity {
 			} catch (IOException e) {
 				Log.e(TAG, e.getMessage());
 			}
+			runOnUiThread(new Runnable() {
+				public void run() {
+					TakePictureCallback.resetBitmap(uri);
+					ImageTransferHelper.this.setResult(RESULT_OK);
+					ImageTransferHelper.this.finish();
+				}
+			});
 		}
 	}
+	
+	Handler progressBarHandle=new Handler()
+	{
+		private int size;
+		public void init()
+		{
+			size=0;
+		}
+		public void handleMessage(android.os.Message msg) {
+			size+=msg.what;
+			fileTransferStateBar.setProgress(size);			
+		}
+	};
 }

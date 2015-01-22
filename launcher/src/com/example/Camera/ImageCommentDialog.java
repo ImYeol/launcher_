@@ -86,12 +86,12 @@ public class ImageCommentDialog extends VoiceActivity {
 						// TODO Auto-generated method stub
 						comment = commentView.getText().toString();
 						endOfSpeechDialog.setVisibility(View.GONE);
+						Intent intent = IntentBuilder
+								.CreateIntent(ImageCommentDialog.this, ImageTransferHelper.class)
+								.setUri(Uri).setComment(comment).build();
+						IntentBuilder.startActivityForResult(ImageCommentDialog.this, intent);
 					}
 				});
-				Intent intent = IntentBuilder
-						.CreateIntent(this, ImageTransferHelper.class)
-						.setUri(Uri).setComment(comment).build();
-				IntentBuilder.startActivityForResult(this, intent);
 				
 			} else if (id == 1) {   // No
 				IsCommandRecognized=true;
