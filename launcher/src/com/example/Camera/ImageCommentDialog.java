@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,6 +40,7 @@ public class ImageCommentDialog extends VoiceActivity {
 	private boolean IsCommandRecognized=false;
 	private FrameLayout framelayout;
 	private String preString="";
+	private boolean IsOnCounting=false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,7 @@ public class ImageCommentDialog extends VoiceActivity {
 		CommandList=new String[]{"yes","No","clear","finish"};
 		mGestureDetector=createGestureDetector(this);
 	}
+	
 	@Override
 	public void onVoiceCommand(String command) {
 		// TODO Auto-generated method stub
@@ -139,6 +142,19 @@ public class ImageCommentDialog extends VoiceActivity {
 		}
 	}
 	@Override
+	public void onBeginSpeech() {
+		if(IsOnCounting){
+			runOnUiThread(new Runnable() {		
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					IsOnCounting=false;
+					mNoSpeechCountDown.cancel();
+				}
+			});
+		}
+	}
+	@Override
 	public void onResultOfSpeech() {
 		// TODO Auto-generated method stub
 		if (IsOnDialog == false) {
@@ -146,20 +162,41 @@ public class ImageCommentDialog extends VoiceActivity {
 				@Override
 				public void run() {
 					// TODO Auto-generated method stub
-					if (endOfSpeechDialog == null) {
-						endOfSpeechDialog = WarningDialog.getInstance().setLayout(ImageCommentDialog.this, framelayout)
-								.setText("You want to send message?", "Yes : No : Clear : Finish").build();
-					}
-					else
-						endOfSpeechDialog.setVisibility(View.VISIBLE);
+					if(IsOnCounting)
+						mNoSpeechCountDown.cancel();
+					IsOnCounting=true;
+					mNoSpeechCountDown.start();
+					preString=commentView.getText().toString();
 				}
 			});
-			setCommands();
-			IsOnDialog = true;
-			IsCommandRecognized=false;
+		}
+	}
+
+	// Count down timer for Jelly Bean work around
+	protected CountDownTimer mNoSpeechCountDown = new CountDownTimer(3000, 3000) {
+		@Override
+		public void onTick(long millisUntilFinished) {
+			// TODO Auto-generated method stub
+
 		}
 
-	}
+		@Override
+		public void onFinish() {
+			Log.d(TAG, "timer triggered");
+			if (endOfSpeechDialog == null) {
+				endOfSpeechDialog = WarningDialog
+						.getInstance()
+						.setLayout(ImageCommentDialog.this, framelayout)
+						.setText("You want to send message?",
+								"Yes : No : Clear : Finish").build();
+			} else
+				endOfSpeechDialog.setVisibility(View.VISIBLE);
+			setCommands();
+			IsOnDialog = true;
+			IsCommandRecognized = false;
+			IsOnCounting=false;
+		}
+	};
 	@Override
 	protected VoiceCommand getVoiceCommand() {
 		// TODO Auto-generated method stub

@@ -20,6 +20,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -45,6 +46,7 @@ public class ImageTransferHelper extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.transfer_dialog);
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		fileTransferStateBar = (ProgressBar) findViewById(R.id.file_transfer_progressbar);

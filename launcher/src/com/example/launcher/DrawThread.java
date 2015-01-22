@@ -31,16 +31,16 @@ public class DrawThread extends Thread {
 		switch(destination)
 		{
 		case Constants.TO_BACK:
-			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed);
+			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed) + 1;
 			break;
 		case Constants.TO_FORWARD_CENTER:
-			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed);
-			break;
+			this.RenderingCount=distance * caculateCount(Constants.displayedPlace,z,speed) + 1;
+			break; 
 		case Constants.TO_BACKWARD_CENTER:
-			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed);
+			this.RenderingCount=distance * caculateCount(Constants.displayedPlace,z,speed) + 1;
 			break;
 		case Constants.TO_FRONT:
-			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed);
+			this.RenderingCount=distance * caculateCount(Constants.disapearedPlace,z,speed) + 1;
 			break;
 		}
 	}
@@ -48,7 +48,8 @@ public class DrawThread extends Thread {
 		// TODO Auto-generated method stub
 		float diff= Math.abs(destination - z);
 		int quotient =(int) Math.abs(diff / speed);
-		int option= diff % speed != 0 ? 1 : 0; 
+		int option= diff % speed > 0.f ? 1 : 0;
+		Log.d(TAG, "DrawThread - diff:"+diff+" quotient:"+quotient+" option:"+option+ " sum:"+ (quotient+option) );
 		return quotient+option;
 	}
 }

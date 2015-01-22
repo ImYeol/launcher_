@@ -81,6 +81,7 @@ public class GLView extends GLSurfaceView {
 					// TODO Auto-generated method stub
 					if(gesture == Gesture.TAP)
 					{
+						DoNotReceiveInput=true;
 						renderer.performClick();
 					}
 					return false;

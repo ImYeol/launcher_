@@ -34,7 +34,7 @@ public class MainActivity extends VoiceActivity {
 	
 	public static GLView glview;
 	private final static String TAG="MainActivity";
-	private BroadcastReceiver VoiceCommandAnimFinishReceiver;
+//	private BroadcastReceiver VoiceCommandAnimFinishReceiver;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -42,7 +42,7 @@ public class MainActivity extends VoiceActivity {
 		glview=new GLView(this);
 		setContentView(glview);
 		CommandList=new String[]{"camera","Google","command"};
-		VoiceCommandAnimFinishReceiver=new VoiceCommandStartReceiver();
+	//	VoiceCommandAnimFinishReceiver=new VoiceCommandStartReceiver();
 		startService(new Intent(this,VoiceListenerService.class));
 	}
 	@Override
@@ -51,13 +51,13 @@ public class MainActivity extends VoiceActivity {
 		super.onResume();
 		Log.d(TAG, "Main onResume");
 		glview.resetDoNotReceiveInput();
-		registerReceiver(VoiceCommandAnimFinishReceiver, new IntentFilter(Constants.VoiceCommandAction));
+//		registerReceiver(VoiceCommandAnimFinishReceiver, new IntentFilter(Constants.VoiceCommandAction));
 	}
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		unregisterReceiver(VoiceCommandAnimFinishReceiver);
+//		unregisterReceiver(VoiceCommandAnimFinishReceiver);
 	}
 	@Override
 	protected void onDestroy() {
@@ -97,7 +97,7 @@ public class MainActivity extends VoiceActivity {
 			}
 		});
 	}
-	public class VoiceCommandStartReceiver extends BroadcastReceiver{
+/*	public class VoiceCommandStartReceiver extends BroadcastReceiver{
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -120,5 +120,5 @@ public class MainActivity extends VoiceActivity {
 			}
 		}
 		
-	}
+	}*/
 }

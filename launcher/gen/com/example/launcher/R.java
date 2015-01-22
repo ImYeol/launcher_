@@ -26,46 +26,40 @@ public final class R {
         public static final int iron_man=0x7f02000c;
     }
     public static final class id {
-        public static final int button1=0x7f050000;
-        public static final int camera_catch_label=0x7f050005;
-        public static final int camera_finish_label=0x7f050006;
-        public static final int camera_label=0x7f050015;
-        public static final int camera_overlayview=0x7f050002;
-        public static final int camera_preview=0x7f050001;
-        public static final int command_list_frame=0x7f050014;
-        public static final int comment_layout=0x7f050007;
-        public static final int comment_text=0x7f050008;
-        public static final int file_transfer_progressbar=0x7f050013;
-        public static final int finish_label=0x7f050017;
-        public static final int imageView=0x7f05000d;
-        public static final int imageView1=0x7f050003;
-        public static final int imageView2=0x7f050009;
-        public static final int imageView3=0x7f05000a;
-        public static final int imageView4=0x7f05000b;
-        public static final int imageView5=0x7f05000c;
-        public static final int recognition_state_progressbar=0x7f050018;
-        public static final int search_label=0x7f050016;
-        public static final int textView2=0x7f050004;
-        public static final int text_menu_item1=0x7f05000f;
-        public static final int text_menu_item2=0x7f050010;
-        public static final int text_menu_item3=0x7f050011;
-        public static final int text_menu_item4=0x7f050012;
-        public static final int thumbnail=0x7f05000e;
+        public static final int button1=0x7f060000;
+        public static final int camera_catch_label=0x7f060005;
+        public static final int camera_finish_label=0x7f060006;
+        public static final int camera_label=0x7f06000c;
+        public static final int camera_overlayview=0x7f060002;
+        public static final int camera_preview=0x7f060001;
+        public static final int command_list_frame=0x7f06000b;
+        public static final int comment_layout=0x7f060007;
+        public static final int comment_text=0x7f060008;
+        public static final int file_transfer_progressbar=0x7f06000a;
+        public static final int finish_label=0x7f060010;
+        public static final int imageView=0x7f060009;
+        public static final int imageView1=0x7f060003;
+        public static final int imageView2=0x7f06000d;
+        public static final int imageView3=0x7f06000f;
+        public static final int recognition_state_progressbar=0x7f060011;
+        public static final int search_label=0x7f06000e;
+        public static final int textView2=0x7f060004;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
         public static final int camera=0x7f030001;
         public static final int custom_dialog=0x7f030002;
-        public static final int hhh=0x7f030003;
-        public static final int image_viewer=0x7f030004;
-        public static final int thumbnail_view=0x7f030005;
-        public static final int transfer_dialog=0x7f030006;
-        public static final int voice_commands_list_layout=0x7f030007;
-        public static final int voice_commands_list_view=0x7f030008;
-        public static final int voice_recognition_state_dialog=0x7f030009;
+        public static final int image_viewer=0x7f030003;
+        public static final int transfer_dialog=0x7f030004;
+        public static final int voice_commands_list_layout=0x7f030005;
+        public static final int voice_commands_list_view=0x7f030006;
+        public static final int voice_recognition_state_dialog=0x7f030007;
+    }
+    public static final class raw {
+        public static final int camera_click=0x7f040000;
     }
     public static final class string {
-        public static final int app_name=0x7f040000;
-        public static final int hello_world=0x7f040001;
+        public static final int app_name=0x7f050000;
+        public static final int hello_world=0x7f050001;
     }
 }

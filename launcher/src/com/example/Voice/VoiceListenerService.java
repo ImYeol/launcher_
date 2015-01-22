@@ -52,6 +52,7 @@ public class VoiceListenerService extends Service {
 	private boolean IsCommandRecognized=false;
 	private boolean NotCommand=false;
 	private String preString="";
+	private int preStringLen=0;
 
 	public class VoiceListenerBinder extends IVoiceListenerService.Stub {
 
@@ -217,7 +218,7 @@ public class VoiceListenerService extends Service {
 			audio.playSoundEffect(Sounds.SUCCESS);
 			IsCommandRecognized=false;
 			NotCommand=false;
-			preString="";
+			preStringLen=0;
 			try {
 				mCallback.onBeginSpeech();
 			} catch (RemoteException e) {
@@ -270,8 +271,8 @@ public class VoiceListenerService extends Service {
 				NotCommand=true;
 			int cmdId=-1;
 			if (commands == null) {
-				if (str != null && preString.equals(str)==false ) {
-					preString=str;
+				if (str != null && preStringLen != str.length()) {
+					preStringLen=str.length();
 					onVoiceCommand(str);
 				}
 			} else if (commands != null && (cmdId = commands.contains(str)) != -1) {
@@ -305,7 +306,7 @@ public class VoiceListenerService extends Service {
 			int cmdId=-1;
 			Log.d(tag, "result " + str);
 			if (commands == null) {
-				if (preString.equals(str) == false)
+				if (preStringLen != str.length())
 					onVoiceCommand(str);
 				try {
 					mCallback.onResultOfSpeech();

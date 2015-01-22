@@ -20,6 +20,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Camera;
+import android.hardware.Camera.ShutterCallback;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -29,9 +32,9 @@ import android.widget.TextView;
 
 import com.example.Voice.VoiceActivity;
 import com.example.launcher.R;
+import com.google.android.glass.media.Sounds;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
-import com.google.android.glass.widget.CardBuilder;
 
 public class CameraActivity extends VoiceActivity {
 
@@ -48,7 +51,8 @@ public class CameraActivity extends VoiceActivity {
 	private FrameLayout preview;
 	private TextView catch_label;
 	private TextView finish_label;
-	
+	private int shutterSound;
+	private SoundPool soundPool;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -62,12 +66,9 @@ public class CameraActivity extends VoiceActivity {
 		((FrameLayout)findViewById(R.id.camera_overlayview)).bringToFront();
 		CommandList=new String[]{"catch","finish"};
 		mPictureCallback=new TakePictureCallback(this);
+	       soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
+       	shutterSound = soundPool.load(this, R.raw.camera_click, 0);
 		
-	}
-	private void initTextView()
-	{
-		catch_label.setTextColor(Color.WHITE);
-		finish_label.setTextColor(Color.WHITE);
 	}
 	@Override
 	protected void onStart() {
@@ -101,7 +102,6 @@ public class CameraActivity extends VoiceActivity {
 		}
 		mCamera.startPreview();
 		cameraView.setCamera(mCamera);
-		initTextView();
 		super.onResume();
 	}
 
@@ -128,32 +128,26 @@ public class CameraActivity extends VoiceActivity {
 		final int id = cmdId;
 		if(id== 0) // catch
 		{
-			runOnUiThread(new Runnable() {
-				
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-					catch_label.setTextColor(Color.BLUE);
-				}
-			});
+
 			UnBindService();
+			soundPool.play(shutterSound, 1f, 1f, 0, 0, 1);
 			mCamera.takePicture(null, null, mPictureCallback);
 		}
 		else if(id == 1) // finish
 		{
-			runOnUiThread(new Runnable() {
-				
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-					finish_label.setTextColor(Color.BLUE);
-				}
-			});
+
 			UnBindService();
 			setResult(RESULT_OK);
 			finish();
 		}
 	}
+/*	private final ShutterCallback shutterCallback = new ShutterCallback() {
+        public void onShutter() {
+        	SoundPool soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
+        	int shutterSound = soundPool.load(this, R.raw.camera_click, 0);
+        	soundPool.play(shutterSound, 1f, 1f, 0, 0, 1);
+        }
+    };*/
 	private GestureDetector createGestureDetector(Context context) {
 		GestureDetector gestureDetector = new GestureDetector(context);
 		// Create a base listener for generic gestures
@@ -164,7 +158,7 @@ public class CameraActivity extends VoiceActivity {
 				// TODO Auto-generated method stub
 				if (gesture == Gesture.TAP) {
 					Log.d(tag, "tap!!!!!!!!!");
-					catch_label.setTextColor(Color.BLUE);
+		        	soundPool.play(shutterSound, 1f, 1f, 0, 0, 1);
 					mCamera.takePicture(null, null, mPictureCallback);
 
 				}
@@ -178,7 +172,6 @@ public class CameraActivity extends VoiceActivity {
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		// TODO Auto-generated method stub
-		Log.d(tag, "generic Event");
 		return mGestureDetector.onMotionEvent(event);
 	}
 }

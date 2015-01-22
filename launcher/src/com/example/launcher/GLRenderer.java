@@ -15,6 +15,7 @@ import com.example.Camera.CameraActivity;
 import com.example.Voice.VoiceActivity;
 import com.example.Voice.VoiceCommandListActivity;
 import com.example.Voice.VoiceListenerService;
+import com.example.util.IntentBuilder;
 import com.google.android.glass.media.Sounds;
 
 import android.app.Application;
@@ -52,6 +53,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	private boolean IsFirst=true;
 	private List<DrawThread> ThreadList=new ArrayList<DrawThread>();
 	private AudioManager audio;
+	private boolean onVoiceSearching=false;
 	
 	private float[] texCoords = { // Texture coords for the above face (NEW)
 			0.0f, 1.0f, // A. left-bottom (NEW)
@@ -372,21 +374,43 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 			mApplications.get(CurIndex).resetToCenterPlace();
 			mApplications.get(getNextIndex()).resetToBackPlace();
 			mApplications.get(getPreIndex()).resetToFrontPlace();
-			ApplicationInfo.setOffset(0.f);
-			ApplicationInfo.Destination=Constants.NO_DESTINATION;
-			--distance;
+			distance--;
 			if(distance > 0)
 			{
-				Move(Constants.anim_speed);
-				ApplicationInfo.Destination = Constants.TO_FRONT;
+				if(ApplicationInfo.Destination == Constants.TO_FRONT)
+					Move(Constants.anim_speed);
+				else if(ApplicationInfo.Destination == Constants.TO_BACK)
+					Move(-Constants.anim_speed);
 			}
-			else if(ThreadList.size() > 0 && distance <=0)
+			else if(distance ==0 && ThreadList.size() > 0)
 			{
+				ApplicationInfo.setOffset(0.f);
+				ApplicationInfo.Destination=Constants.NO_DESTINATION;
 				ThreadList.remove(0);
-				if(mApplications.get(CurIndex).voiceTag)
-					broadcastVoiceCommandAction();
+				if(IsAnimate())
+				{
+					sendIntent(mApplications.get(CurIndex).title.toString());
+					onVoiceSearching=false;
+				}
 			}
 			Log.d(TAG, "ifArrived: "+ApplicationInfo.Destination);
+		}
+	}
+	private boolean IsAnimate()
+	{
+		return mApplications.get(CurIndex).voiceTag && this.onVoiceSearching;
+	}
+	private void sendIntent(String title)
+	{
+		if(title.equals("Camera"))
+		{
+			Intent localIntent=IntentBuilder.CreateIntent(context, CameraActivity.class).build();
+			IntentBuilder.startActivity(context, localIntent);
+		}
+		else if(title.equals("Google"))
+		{
+			Intent localIntent=new Intent("com.google.glass.action.START_VOICE_SEARCH_ACTIVITY");
+			context.startActivity(localIntent);
 		}
 	}
 	private void broadcastVoiceCommandAction() {
@@ -478,34 +502,45 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	public void goTo(int destination) {
 		// TODO Auto-generated method stub
 		distance=1;
-		float speed=0;
 		if(destination == Constants.TO_BACKWARD_CENTER || destination == Constants.TO_BACK)
 		{
-			speed=-Constants.speed;
-			Move(speed);
+			Move(-Constants.speed);
 		}
 		else
 		{
-			speed=Constants.speed;
-			Move(speed);
+			Move(Constants.speed);
 		}
 		ApplicationInfo.Destination=destination;
 		thread=new DrawThread(glview);
-		thread.setRenderingCount(destination, mApplications.get(CurIndex).getZ(),speed,distance);
+		thread.setRenderingCount(destination, mApplications.get(CurIndex).getZ(),Constants.speed,distance);
 		ThreadList.add(thread);
 		thread.start();
 	}
 	public void goToVoiceIcon(String command)
 	{
 		this.distance=caculateToVoiceIcon(command);
+		if(distance==0)
+			return ;
+		this.onVoiceSearching=true;
+		thread=new DrawThread(glview);
 		Log.d(TAG, "goToVoiceIcon cnt:"+distance);
+		if(distance >0)
+		{
 			Move(Constants.anim_speed);
 			ApplicationInfo.Destination = Constants.TO_FRONT;
-			thread=new DrawThread(glview);
 			thread.setRenderingCount(Constants.TO_FRONT, mApplications.get(CurIndex).getZ(), 
 					Constants.anim_speed,distance);
-			ThreadList.add(thread);
-			thread.start();
+		}
+		else
+		{
+			distance=-distance;
+			Move(-Constants.anim_speed);
+			ApplicationInfo.Destination = Constants.TO_BACK;
+			thread.setRenderingCount(Constants.TO_BACK, mApplications.get(CurIndex).getZ(), 
+					Constants.anim_speed,distance);
+		}
+		ThreadList.add(thread);
+		thread.start();
 	}
 	public void Move(float offset) {
 		// TODO Auto-generated method stub
@@ -541,16 +576,22 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	}
 	private int caculateToVoiceIcon(String command)
 	{
+		if(mApplications.get(CurIndex).title.equals(command))
+			return 0;
 		int cur=CurIndex;
-		for(int i=0;i<mApplications.size();i++)
+		int distance=0;
+		int size=mApplications.size();
+		for(int i=0;i < size;i++)
 		{
 			cur=++cur >= mApplications.size() ? 0:cur;
 			ApplicationInfo info=mApplications.get(cur);
 			if(info.voiceTag && info.title.equals(command))
 			{
-				return ++i;
+				distance=++i;
+				break;
 			}
 		}
-		return -1;
+		distance= (size - distance) < distance ? (distance - size) : distance;
+		return distance;
 	}
 }
