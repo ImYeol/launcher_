@@ -32,7 +32,7 @@ public class ImageViewer extends VoiceActivity {
 		view = (ImageView)findViewById(R.id.imageView);
 		String CacheKey=getIntent().getExtras().getString("CacheKey");
 		uri=Uri.parse(CacheKey);
-		CommandList=new String[]{"send","delete","finish"};
+		CommandList=new String[]{"send","delete","back","bec","bank"};
 		view.setImageBitmap(TakePictureCallback.getBitmap(CacheKey));
 /*		imgFile=new File(uri.getPath());
 		if(imgFile.exists()){
@@ -92,7 +92,7 @@ public class ImageViewer extends VoiceActivity {
 			setResult(RESULT_OK);
 			finish();
 		}
-		else if(id == 2)  // finish
+		else // finish
 		{
 			UnBindService();
 			setResult(RESULT_OK);
@@ -109,13 +109,21 @@ public class ImageViewer extends VoiceActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 			for(String command : CommandList)
 			{
-				MenuItem item=menu.add(command);
 				if(command.equals("send"))
+				{
+					MenuItem item=menu.add(command);
 					item.setIcon(R.drawable.ic_share_50);
+				}
 				else if(command.equals("delete"))
+				{
+					MenuItem item=menu.add(command);
 					item.setIcon(R.drawable.ic_delete_50);
-				else if(command.equals("finish"))
+				}
+				else if(command.equals("back"))
+				{
+					MenuItem item=menu.add(command);
 					item.setIcon(R.drawable.ic_no_50);
+				}
 			}
 		return true;
 	}
@@ -145,9 +153,9 @@ public class ImageViewer extends VoiceActivity {
 			imgFile.delete();
 			finish();
 		}
-		else if(item.getTitle().toString().equals("finish"))
+		else if(item.getTitle().toString().equals("back"))
 		{
-			Log.d(TAG, "finish");
+			Log.d(TAG, "back");
 			UnBindService();
 			setResult(RESULT_OK);
 			finish();

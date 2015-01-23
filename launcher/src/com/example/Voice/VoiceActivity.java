@@ -40,6 +40,12 @@ public abstract class VoiceActivity extends Activity{
 		}
 		return this.voiceCommand;
 	}
+	protected void turnOnVoiceRecognize() {
+		mVoiceCommandListener.turnOnVoiceRecognize();
+	}
+	protected void turnOffVoiceRecognize() {
+		mVoiceCommandListener.turnOffVoiceRecognize();
+	}
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub

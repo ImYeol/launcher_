@@ -12,38 +12,38 @@ public final class R {
     }
     public static final class drawable {
         public static final int aim=0x7f020000;
-        public static final int ic_camera_50=0x7f020001;
-        public static final int ic_delete_50=0x7f020002;
-        public static final int ic_launcher=0x7f020003;
-        public static final int ic_message_30=0x7f020004;
-        public static final int ic_message_50=0x7f020005;
-        public static final int ic_no_50=0x7f020006;
-        public static final int ic_reply_50=0x7f020007;
-        public static final int ic_request_50=0x7f020008;
-        public static final int ic_search_50=0x7f020009;
-        public static final int ic_share_50=0x7f02000a;
-        public static final int ic_warning_150=0x7f02000b;
-        public static final int iron_man=0x7f02000c;
+        public static final int custom_progressbar=0x7f020001;
+        public static final int ic_camera_50=0x7f020002;
+        public static final int ic_delete_50=0x7f020003;
+        public static final int ic_launcher=0x7f020004;
+        public static final int ic_message_30=0x7f020005;
+        public static final int ic_message_50=0x7f020006;
+        public static final int ic_no_50=0x7f020007;
+        public static final int ic_reply_50=0x7f020008;
+        public static final int ic_request_50=0x7f020009;
+        public static final int ic_search_50=0x7f02000a;
+        public static final int ic_share_50=0x7f02000b;
+        public static final int ic_warning_150=0x7f02000c;
+        public static final int iron_man=0x7f02000d;
     }
     public static final class id {
         public static final int button1=0x7f060000;
-        public static final int camera_catch_label=0x7f060005;
-        public static final int camera_finish_label=0x7f060006;
-        public static final int camera_label=0x7f06000c;
+        public static final int camera_catch_label=0x7f060004;
+        public static final int camera_label=0x7f06000b;
         public static final int camera_overlayview=0x7f060002;
         public static final int camera_preview=0x7f060001;
-        public static final int command_list_frame=0x7f06000b;
-        public static final int comment_layout=0x7f060007;
-        public static final int comment_text=0x7f060008;
-        public static final int file_transfer_progressbar=0x7f06000a;
-        public static final int finish_label=0x7f060010;
-        public static final int imageView=0x7f060009;
+        public static final int command_list_frame=0x7f06000a;
+        public static final int comment_layout=0x7f060005;
+        public static final int comment_text=0x7f060006;
+        public static final int file_transfer_progressbar=0x7f060008;
+        public static final int finish_label=0x7f06000f;
+        public static final int imageView=0x7f060007;
         public static final int imageView1=0x7f060003;
-        public static final int imageView2=0x7f06000d;
-        public static final int imageView3=0x7f06000f;
-        public static final int recognition_state_progressbar=0x7f060011;
-        public static final int search_label=0x7f06000e;
-        public static final int textView2=0x7f060004;
+        public static final int imageView2=0x7f06000c;
+        public static final int imageView3=0x7f06000e;
+        public static final int recognition_state_progressbar=0x7f060010;
+        public static final int search_label=0x7f06000d;
+        public static final int textView1=0x7f060009;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;

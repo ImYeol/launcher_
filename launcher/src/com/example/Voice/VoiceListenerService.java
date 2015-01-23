@@ -80,14 +80,44 @@ public class VoiceListenerService extends Service {
 			// TODO Auto-generated method stub
 			VoiceListenerService.this.unRegisterCallback();
 		}
+		@Override
+		public void turnOffVoiceRecognize()
+		{
+			Log.d(tag, "turn off recognize");
+			VoiceListenerService.this.turnOffVoiceRecognize();
+		}
+		@Override
+		public void turnOnVoiceRecognize()
+		{
+			Log.d(tag, "turn on recognize");
+			VoiceListenerService.this.turnOnVoiceRecognize();
+		}
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
+		Log.d(tag, "onBind");
+		if(mSpeechRecognizer != null && mIsListening==false)
+			StartListening();
 		return mBinder;
 	}
-
+	public void turnOffVoiceRecognize()
+	{
+			if (mIsCountDownOn) {
+				mIsCountDownOn = false;
+				mNoSpeechCountDown.cancel();
+			}
+			StopListening();
+			Log.d(tag, "turnOff - stopListening");
+	}
+	public void turnOnVoiceRecognize()
+	{
+		if(!mIsListening)
+		{
+			StartListening();
+		}
+	}
 	public void registerCallback(IVoiceListenerCallback callback) {
 		this.mCallback = callback;
 	}
@@ -109,6 +139,7 @@ public class VoiceListenerService extends Service {
 				RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 		mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
 		mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
+		mIsListening=true;
 		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 		
 	}
@@ -176,7 +207,18 @@ public class VoiceListenerService extends Service {
 			Log.d(tag, "On error send msg error");
 		}
 	}
-
+	protected void StopListening() {
+		if(mIsListening)
+		{
+			Message message = Message.obtain(null, MSG_RECOGNIZER_CANCEL);
+			try {
+				mServerMessenger.send(message);
+			} catch (RemoteException e) {
+				Log.d(tag, "stopListening failed" + e.getMessage());
+			}
+		}
+		
+	}
 	// Count down timer for Jelly Bean work around
 	protected CountDownTimer mNoSpeechCountDown = new CountDownTimer(5000, 5000) {
 		@Override
@@ -304,7 +346,6 @@ public class VoiceListenerService extends Service {
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
 			int cmdId=-1;
-			Log.d(tag, "result " + str);
 			if (commands == null) {
 				if (preStringLen != str.length())
 					onVoiceCommand(str);
@@ -318,6 +359,7 @@ public class VoiceListenerService extends Service {
 			}
 			else if(commands !=null)
 			{
+				Log.d(tag, "command:"+str);
 				if((cmdId=commands.contains(str)) != -1)
 					onVoiceCommand_int(cmdId);
 				else

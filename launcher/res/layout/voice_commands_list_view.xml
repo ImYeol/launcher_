@@ -25,7 +25,7 @@
             android:layout_centerVertical="true"
             android:layout_marginLeft="40dp"
             android:layout_toRightOf="@+id/imageView1"
-            android:text="Camera" />
+            android:text="Cam" />
 
     </RelativeLayout>
 
@@ -73,7 +73,7 @@
             android:layout_centerVertical="true"
             android:layout_marginLeft="40dp"
             android:layout_toRightOf="@+id/imageView3"
-            android:text="Finish" />
+            android:text="back" />
 
     </RelativeLayout>
 

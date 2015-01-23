@@ -49,22 +49,22 @@ public class CameraActivity extends VoiceActivity {
 	private TakePictureCallback mPictureCallback;
 	private View guideView;
 	private FrameLayout preview;
-	private TextView catch_label;
-	private TextView finish_label;
+//	private TextView catch_label;
+//	private TextView finish_label;
 	private int shutterSound;
 	private SoundPool soundPool;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.camera);
-		catch_label=(TextView)findViewById(R.id.camera_catch_label);
-		finish_label=(TextView)findViewById(R.id.camera_finish_label);
+//		catch_label=(TextView)findViewById(R.id.camera_catch_label);
+//		finish_label=(TextView)findViewById(R.id.camera_finish_label);
 		mGestureDetector = createGestureDetector(this);
 		cameraView = new CameraSurfaceView(this);
 		preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(cameraView);
 		((FrameLayout)findViewById(R.id.camera_overlayview)).bringToFront();
-		CommandList=new String[]{"catch","finish"};
+		CommandList=new String[]{"back","bec","bank","shoot","shot","Chuck","shock"};
 		mPictureCallback=new TakePictureCallback(this);
 	       soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
        	shutterSound = soundPool.load(this, R.raw.camera_click, 0);
@@ -102,6 +102,7 @@ public class CameraActivity extends VoiceActivity {
 		}
 		mCamera.startPreview();
 		cameraView.setCamera(mCamera);
+	//	turnOnVoiceRecognize();
 		super.onResume();
 	}
 
@@ -126,19 +127,17 @@ public class CameraActivity extends VoiceActivity {
 	public void onVoiceCommand(int cmdId) {
 		// TODO Auto-generated method stub
 		final int id = cmdId;
-		if(id== 0) // catch
+		if(id== 0 || id == 1 || id ==2) // back
 		{
-
-			UnBindService();
-			soundPool.play(shutterSound, 1f, 1f, 0, 0, 1);
-			mCamera.takePicture(null, null, mPictureCallback);
-		}
-		else if(id == 1) // finish
-		{
-
 			UnBindService();
 			setResult(RESULT_OK);
 			finish();
+		}
+		else // shot , chunk ...
+		{
+			UnBindService();
+			soundPool.play(shutterSound, 1f, 1f, 0, 0, 1);
+			mCamera.takePicture(null, null, mPictureCallback);
 		}
 	}
 /*	private final ShutterCallback shutterCallback = new ShutterCallback() {

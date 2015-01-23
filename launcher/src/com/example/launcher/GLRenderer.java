@@ -220,6 +220,8 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 			return ;
 		}
 		audio.playSoundEffect(Sounds.SELECTED);
+		if(mApplications.get(CurIndex).title.equals("Google"))
+			((MainActivity)context).turnOffVoiceRecognize();
 		Intent intent = mApplications.get(CurIndex).intent;
 		context.startActivity(intent);
 	}

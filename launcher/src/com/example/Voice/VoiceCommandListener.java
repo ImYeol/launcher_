@@ -118,7 +118,24 @@ public class VoiceCommandListener implements VoiceListener {
 			mBound = false;
 		}
 	}
-
+	public void turnOffVoiceRecognize()
+	{
+		try {
+			mService.turnOffVoiceRecognize();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	public void turnOnVoiceRecognize()
+	{
+		try {
+			mService.turnOnVoiceRecognize();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public boolean setCommands(VoiceCommand commands)
 	{
 		this.commands=commands;
@@ -168,6 +185,7 @@ public class VoiceCommandListener implements VoiceListener {
 				{
 					mService.setCommands(commands);
 				}
+				mService.turnOnVoiceRecognize();
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				unBindService();

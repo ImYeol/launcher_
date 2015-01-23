@@ -52,7 +52,7 @@ public class ImageCommentDialog extends VoiceActivity {
 		commentView.setText("");
 		framelayout=(FrameLayout)findViewById(R.id.comment_layout);
 		Uri=getIntent().getExtras().getString("Uri");
-		CommandList=new String[]{"yes","No","clear","finish"};
+		CommandList=new String[]{"yes","No","clear","back","fact","bec","bank"};
 		mGestureDetector=createGestureDetector(this);
 	}
 	
@@ -84,6 +84,7 @@ public class ImageCommentDialog extends VoiceActivity {
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
+						turnOffVoiceRecognize();
 						comment = commentView.getText().toString();
 						endOfSpeechDialog.setVisibility(View.GONE);
 						Intent intent = IntentBuilder
@@ -125,7 +126,7 @@ public class ImageCommentDialog extends VoiceActivity {
 					}
 				});
 			}
-			else if(id == 3)  // finish
+			else  // back
 			{
 				runOnUiThread(new Runnable() {
 					
@@ -188,7 +189,7 @@ public class ImageCommentDialog extends VoiceActivity {
 						.getInstance()
 						.setLayout(ImageCommentDialog.this, framelayout)
 						.setText("You want to send message?",
-								"Yes : No : Clear : Finish").build();
+								"Yes : No : Clear : Back").build();
 			} else
 				endOfSpeechDialog.setVisibility(View.VISIBLE);
 			setCommands();

@@ -41,7 +41,7 @@ public class MainActivity extends VoiceActivity {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		glview=new GLView(this);
 		setContentView(glview);
-		CommandList=new String[]{"camera","Google","command"};
+		CommandList=new String[]{"cam","can","come","Google","command"};
 	//	VoiceCommandAnimFinishReceiver=new VoiceCommandStartReceiver();
 		startService(new Intent(this,VoiceListenerService.class));
 	}
@@ -51,6 +51,7 @@ public class MainActivity extends VoiceActivity {
 		super.onResume();
 		Log.d(TAG, "Main onResume");
 		glview.resetDoNotReceiveInput();
+//		turnOnVoiceRecognize();
 //		registerReceiver(VoiceCommandAnimFinishReceiver, new IntentFilter(Constants.VoiceCommandAction));
 	}
 	@Override
@@ -65,7 +66,10 @@ public class MainActivity extends VoiceActivity {
 		super.onDestroy();
 		stopService(new Intent(this,VoiceListenerService.class));
 	}
-	
+	public void turnOffVoiceRecognize()
+	{
+		mVoiceCommandListener.turnOffVoiceRecognize();
+	}
 	@Override
 	public void onVoiceCommand(String command) {
 	}
@@ -78,17 +82,18 @@ public class MainActivity extends VoiceActivity {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				if(id == 0) // camera
+				if(id == 0 || id==1 || id ==2) // camera
 				{
 					glview.animationFor("Camera");
 					UnBindService();
 				}
-				else if(id == 1)  // google
+				else if(id == 3)  // google
 				{
+					mVoiceCommandListener.turnOffVoiceRecognize();
 					glview.animationFor("Google");
 					UnBindService();
 				}
-				else if(id == 2) // voice
+				else if(id == 4) // voice
 				{
 					UnBindService();
 					Intent intent=new Intent(MainActivity.this,VoiceCommandListActivity.class);

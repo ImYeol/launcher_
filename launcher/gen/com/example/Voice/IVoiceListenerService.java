@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: C:\\eclipse-SDK-4.2-win32-x86_64\\eclipse\\workspace\\launcher_\\launcher\\src\\com\\example\\Voice\\IVoiceListenerService.aidl
+ * Original file: /home/yeol/workspace/launcher_/launcher/src/com/example/Voice/IVoiceListenerService.aidl
  */
 package com.example.Voice;
 public interface IVoiceListenerService extends android.os.IInterface
@@ -76,6 +76,20 @@ case TRANSACTION_unRegisterCallback:
 {
 data.enforceInterface(DESCRIPTOR);
 this.unRegisterCallback();
+reply.writeNoException();
+return true;
+}
+case TRANSACTION_turnOffVoiceRecognize:
+{
+data.enforceInterface(DESCRIPTOR);
+this.turnOffVoiceRecognize();
+reply.writeNoException();
+return true;
+}
+case TRANSACTION_turnOnVoiceRecognize:
+{
+data.enforceInterface(DESCRIPTOR);
+this.turnOnVoiceRecognize();
 reply.writeNoException();
 return true;
 }
@@ -161,14 +175,46 @@ _reply.recycle();
 _data.recycle();
 }
 }
+@Override public void turnOffVoiceRecognize() throws android.os.RemoteException
+{
+android.os.Parcel _data = android.os.Parcel.obtain();
+android.os.Parcel _reply = android.os.Parcel.obtain();
+try {
+_data.writeInterfaceToken(DESCRIPTOR);
+mRemote.transact(Stub.TRANSACTION_turnOffVoiceRecognize, _data, _reply, 0);
+_reply.readException();
+}
+finally {
+_reply.recycle();
+_data.recycle();
+}
+}
+@Override public void turnOnVoiceRecognize() throws android.os.RemoteException
+{
+android.os.Parcel _data = android.os.Parcel.obtain();
+android.os.Parcel _reply = android.os.Parcel.obtain();
+try {
+_data.writeInterfaceToken(DESCRIPTOR);
+mRemote.transact(Stub.TRANSACTION_turnOnVoiceRecognize, _data, _reply, 0);
+_reply.readException();
+}
+finally {
+_reply.recycle();
+_data.recycle();
+}
+}
 }
 static final int TRANSACTION_setCommands = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
 static final int TRANSACTION_ReSetCommands = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
 static final int TRANSACTION_registerCallback = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
 static final int TRANSACTION_unRegisterCallback = (android.os.IBinder.FIRST_CALL_TRANSACTION + 3);
+static final int TRANSACTION_turnOffVoiceRecognize = (android.os.IBinder.FIRST_CALL_TRANSACTION + 4);
+static final int TRANSACTION_turnOnVoiceRecognize = (android.os.IBinder.FIRST_CALL_TRANSACTION + 5);
 }
 public void setCommands(com.example.Voice.VoiceCommand commands) throws android.os.RemoteException;
 public void ReSetCommands() throws android.os.RemoteException;
 public void registerCallback(com.example.Voice.IVoiceListenerCallback callback) throws android.os.RemoteException;
 public void unRegisterCallback() throws android.os.RemoteException;
+public void turnOffVoiceRecognize() throws android.os.RemoteException;
+public void turnOnVoiceRecognize() throws android.os.RemoteException;
 }

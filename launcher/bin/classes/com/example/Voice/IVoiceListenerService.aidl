@@ -11,4 +11,8 @@ interface IVoiceListenerService{
 	void registerCallback(in IVoiceListenerCallback callback);
 	
 	void unRegisterCallback();
+	
+	void turnOffVoiceRecognize();
+	
+	void turnOnVoiceRecognize();
 }
