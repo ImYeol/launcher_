@@ -32,7 +32,7 @@ public class ImageViewer extends VoiceActivity {
 		view = (ImageView)findViewById(R.id.imageView);
 		String CacheKey=getIntent().getExtras().getString("CacheKey");
 		uri=Uri.parse(CacheKey);
-		CommandList=new String[]{"send","delete","back","bec","bank"};
+		CommandList=new String[]{"send","san","sender","delete","back","bec","bank"};
 		view.setImageBitmap(TakePictureCallback.getBitmap(CacheKey));
 /*		imgFile=new File(uri.getPath());
 		if(imgFile.exists()){
@@ -76,14 +76,14 @@ public class ImageViewer extends VoiceActivity {
 	public void onVoiceCommand(int cmdId) {
 		// TODO Auto-generated method stub
 		final int id=cmdId;
-		if(id == 0)  // send
+		if(id == 0 || id == 1 || id ==2)  // send
 		{
 			Log.d(TAG, "send selected");
 			UnBindService();
 			Intent intent=IntentBuilder.CreateIntent(ImageViewer.this, ImageCommentDialog.class).setUri(uri.toString()).build();
 			IntentBuilder.startActivityForResult(ImageViewer.this, intent);
 		}
-		else if(id == 1) // delete
+		else if(id == 3) // delete
 		{
 			Log.d(TAG, "delete selected");
 			imgFile=new File(uri.getPath());

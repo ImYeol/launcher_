@@ -46,7 +46,7 @@ public class VoiceCommand implements Parcelable{
 	{
 		for(int i=0; i < commands.length; i++)
 		{
-			if(recognizedCommand.contains(commands[i]))
+			if(recognizedCommand.equals(commands[i]))
 				return i;
 		}
 		return -1;

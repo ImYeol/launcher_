@@ -28,7 +28,9 @@ import android.speech.RecognizerIntent;
 
 import android.speech.SpeechRecognizer;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.SoundEffectConstants;
+import android.widget.Toast;
 
 public class VoiceListenerService extends Service {
 
@@ -310,7 +312,12 @@ public class VoiceListenerService extends Service {
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
 			if(str.length() > 8 && commands != null)
+			{
 				NotCommand=true;
+				StopListening();
+				outOfCommandSpeechCounter.start();
+				return ;
+			}
 			int cmdId=-1;
 			if (commands == null) {
 				if (str != null && preStringLen != str.length()) {
@@ -318,7 +325,7 @@ public class VoiceListenerService extends Service {
 					onVoiceCommand(str);
 				}
 			} else if (commands != null && (cmdId = commands.contains(str)) != -1) {
-				Log.d(tag, "par result :" + str);
+			//	Log.d(tag, "par result :" + str);
 				IsCommandRecognized = true;
 				onVoiceCommand_int(cmdId);
 				ReStartListening();
@@ -338,7 +345,7 @@ public class VoiceListenerService extends Service {
 			//Log.d(TAG, "onResults"); //$NON-NLS-1$
 			if(IsCommandRecognized || NotCommand)
 			{
-				ReStartListening();
+				//ReStartListening();
 				return ;
 			}
 			ArrayList<String> data = results
@@ -359,16 +366,24 @@ public class VoiceListenerService extends Service {
 			}
 			else if(commands !=null)
 			{
-				Log.d(tag, "command:"+str);
+				//Log.d(tag, "command:"+str);
 				if((cmdId=commands.contains(str)) != -1)
 					onVoiceCommand_int(cmdId);
 				else
-					onVoiceCommand(str);
+				{
+					showToast(str);
+				}
 			}
 			ReStartListening();
 
 		}
-
+	    private void showToast(String str)
+	    {
+	    	Toast toast = Toast.makeText(getApplicationContext(),
+	    			   str, Toast.LENGTH_LONG);
+	    	toast.setGravity(Gravity.CENTER, 0, 0);
+	    	toast.show();
+	    }
 		@Override
 		public void onRmsChanged(float rmsdB) {
 		}
@@ -392,7 +407,18 @@ public class VoiceListenerService extends Service {
 			}
 		}
 	}
+	protected CountDownTimer outOfCommandSpeechCounter = new CountDownTimer(1000, 1000) {
+		@Override
+		public void onTick(long millisUntilFinished) {
+			// TODO Auto-generated method stub
 
+		}
+
+		@Override
+		public void onFinish() {
+			StartListening();
+		}
+	};
 	public void ReSetCommands() {
 		// TODO Auto-generated method stub
 		commands=null;
