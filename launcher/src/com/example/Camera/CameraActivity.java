@@ -64,7 +64,7 @@ public class CameraActivity extends VoiceActivity {
 		preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(cameraView);
 		((FrameLayout)findViewById(R.id.camera_overlayview)).bringToFront();
-		CommandList=new String[]{"back","bec","bank","shoot","shot","Chuck","shock"};
+		CommandList=new String[]{"back","bec","bank","shoot","shot","Chuck","shock","chalk"};
 		mPictureCallback=new TakePictureCallback(this);
 	       soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
        	shutterSound = soundPool.load(this, R.raw.camera_click, 0);

@@ -345,7 +345,7 @@ public class VoiceListenerService extends Service {
 			//Log.d(TAG, "onResults"); //$NON-NLS-1$
 			if(IsCommandRecognized || NotCommand)
 			{
-				//ReStartListening();
+			//	ReStartListening();
 				return ;
 			}
 			ArrayList<String> data = results
@@ -371,7 +371,7 @@ public class VoiceListenerService extends Service {
 					onVoiceCommand_int(cmdId);
 				else
 				{
-					showToast(str);
+		//			showToast(str);
 				}
 			}
 			ReStartListening();

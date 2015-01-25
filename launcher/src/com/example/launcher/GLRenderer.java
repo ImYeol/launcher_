@@ -522,7 +522,11 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	{
 		this.distance=caculateToVoiceIcon(command);
 		if(distance==0)
+		{
+			context.startActivity(mApplications.get(CurIndex).intent);
+			onVoiceSearching=false;
 			return ;
+		}
 		this.onVoiceSearching=true;
 		thread=new DrawThread(glview);
 		Log.d(TAG, "goToVoiceIcon cnt:"+distance);
