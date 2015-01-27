@@ -33,6 +33,7 @@ import android.nfc.cardemulation.OffHostApduService;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.Log;
+import android.view.SoundEffectConstants;
 
 public class GLRenderer implements GLSurfaceView.Renderer{
 	public final static String TAG="GLRenderer";
@@ -404,6 +405,7 @@ public class GLRenderer implements GLSurfaceView.Renderer{
 	}
 	private void sendIntent(String title)
 	{
+		audio.playSoundEffect(SoundEffectConstants.CLICK);
 		if(title.equals("Camera"))
 		{
 			Intent localIntent=IntentBuilder.CreateIntent(context, CameraActivity.class).build();

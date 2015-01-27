@@ -7,10 +7,12 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.Window;
 import android.widget.FrameLayout;
@@ -41,6 +43,7 @@ public class ImageCommentDialog extends VoiceActivity {
 	private FrameLayout framelayout;
 	private String preString="";
 	private boolean IsOnCounting=false;
+	private AudioManager audio;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,7 @@ public class ImageCommentDialog extends VoiceActivity {
 		Uri=getIntent().getExtras().getString("Uri");
 		CommandList=new String[]{"yes","No","clear","back","fact","bec","bank"};
 		mGestureDetector=createGestureDetector(this);
+		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 	}
 	
 	@Override
@@ -87,6 +91,7 @@ public class ImageCommentDialog extends VoiceActivity {
 						turnOffVoiceRecognize();
 						comment = commentView.getText().toString();
 						endOfSpeechDialog.setVisibility(View.GONE);
+						audio.playSoundEffect(SoundEffectConstants.CLICK);
 						Intent intent = IntentBuilder
 								.CreateIntent(ImageCommentDialog.this, ImageTransferHelper.class)
 								.setUri(Uri).setComment(comment).build();

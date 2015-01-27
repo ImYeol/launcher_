@@ -6,17 +6,21 @@ import java.util.List;
 
 import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SoundEffectConstants;
 import android.widget.ImageView;
 
 import com.example.Voice.VoiceActivity;
 import com.example.Voice.VoiceCommand;
 import com.example.launcher.R;
 import com.example.util.IntentBuilder;
+import com.google.android.glass.media.Sounds;
 
 public class ImageViewer extends VoiceActivity {
 
@@ -24,6 +28,7 @@ public class ImageViewer extends VoiceActivity {
 	private ImageView view;
 	private File imgFile;
 	private Uri uri;
+	private AudioManager audio;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -32,8 +37,9 @@ public class ImageViewer extends VoiceActivity {
 		view = (ImageView)findViewById(R.id.imageView);
 		String CacheKey=getIntent().getExtras().getString("CacheKey");
 		uri=Uri.parse(CacheKey);
-		CommandList=new String[]{"send","san","sender","delete","back","bec","bank"};
+		CommandList=new String[]{"send","san","sender","sand","delete","back","bec","bank"};
 		view.setImageBitmap(TakePictureCallback.getBitmap(CacheKey));
+		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 /*		imgFile=new File(uri.getPath());
 		if(imgFile.exists()){
 		    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
@@ -76,14 +82,15 @@ public class ImageViewer extends VoiceActivity {
 	public void onVoiceCommand(int cmdId) {
 		// TODO Auto-generated method stub
 		final int id=cmdId;
-		if(id == 0 || id == 1 || id ==2)  // send
+		if(id == 0 || id == 1 || id ==2 || id ==3)  // send
 		{
 			Log.d(TAG, "send selected");
 			UnBindService();
+			audio.playSoundEffect(SoundEffectConstants.CLICK);
 			Intent intent=IntentBuilder.CreateIntent(ImageViewer.this, ImageCommentDialog.class).setUri(uri.toString()).build();
 			IntentBuilder.startActivityForResult(ImageViewer.this, intent);
 		}
-		else if(id == 3) // delete
+		else if(id == 4) // delete
 		{
 			Log.d(TAG, "delete selected");
 			imgFile=new File(uri.getPath());

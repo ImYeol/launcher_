@@ -18,11 +18,14 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Point;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Display;
+import android.view.SoundEffectConstants;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
@@ -30,6 +33,7 @@ import android.widget.Toast;
 
 import com.example.Camera.TakePictureCallback;
 import com.example.launcher.R;
+import com.google.android.glass.media.Sounds;
 import com.google.android.glass.widget.CardScrollView;
 import com.google.android.glass.widget.Slider;
 
@@ -52,6 +56,7 @@ public class ImageTransferHelper extends Activity {
     private Slider mSlider;
     private Slider.Indeterminate mIndeterminate;
     private Slider.GracePeriod mGracePeriod;
+    private AudioManager audio;
     
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -62,7 +67,7 @@ public class ImageTransferHelper extends Activity {
 		setActivitySize();
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		fileTransferStateBar = (ProgressBar) findViewById(R.id.file_transfer_progressbar);
-
+		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 		Intent intent = getIntent();
 		uri = intent.getExtras().getString("Uri");
 		comment=intent.getExtras().getString("comment");
@@ -290,6 +295,7 @@ public class ImageTransferHelper extends Activity {
 			runOnUiThread(new Runnable() {
 				public void run() {
 					TakePictureCallback.resetBitmap(uri);
+					audio.playSoundEffect(Sounds.DISMISSED);
 					ImageTransferHelper.this.setResult(RESULT_OK);
 					ImageTransferHelper.this.finish();
 				}
