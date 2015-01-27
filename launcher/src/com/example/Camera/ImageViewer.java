@@ -37,7 +37,7 @@ public class ImageViewer extends VoiceActivity {
 		view = (ImageView)findViewById(R.id.imageView);
 		String CacheKey=getIntent().getExtras().getString("CacheKey");
 		uri=Uri.parse(CacheKey);
-		CommandList=new String[]{"send","san","sender","sand","delete","back","bec","bank"};
+		CommandList=new String[]{"send","san","sender","sand","delete","back","bec","bank","thank","thanked"};
 		view.setImageBitmap(TakePictureCallback.getBitmap(CacheKey));
 		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 /*		imgFile=new File(uri.getPath());

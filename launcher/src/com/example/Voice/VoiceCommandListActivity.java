@@ -38,7 +38,7 @@ public class VoiceCommandListActivity extends VoiceActivity {
 		search_label=(TextView)findViewById(R.id.search_label);
 		finish_label=(TextView)findViewById(R.id.finish_label);
 		//tv=(TextView)findViewById(R.id.command_text);
-		CommandList=new String[]{"cam","can","come","Google","cougar","kugler","back","fact","bec","bank"};
+		CommandList=new String[]{"cam","can","10","Kim","Tim","Google","cougar","kugler","back","fact","bec","bank","thank","thanked"};
 		//startService(new Intent(this,VoiceListenerService.class));
 	}
 	@Override
@@ -122,14 +122,14 @@ public class VoiceCommandListActivity extends VoiceActivity {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				if(id == 0 || id ==1 || id ==2) // camera
+				if(id == 0 || id ==1 || id ==2 || id ==3 || id ==4) // camera
 				{
 					reverseColor(camera_label);
 					UnBindService();
 					Intent intent=IntentBuilder.CreateIntent(VoiceCommandListActivity.this, CameraActivity.class).build();
 					IntentBuilder.startActivity(VoiceCommandListActivity.this, intent);
 				}
-				else if(id == 3 || id == 4 || id ==5)   // google 
+				else if(id == 5 || id == 6 || id ==7)   // google 
 				{
 					mVoiceCommandListener.turnOffVoiceRecognize();
 					reverseColor(search_label);

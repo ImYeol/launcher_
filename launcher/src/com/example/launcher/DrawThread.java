@@ -31,16 +31,16 @@ public class DrawThread extends Thread {
 		switch(destination)
 		{
 		case Constants.TO_BACK:
-			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed) + 1;
+			this.RenderingCount=distance * caculateCount(Constants.originPlace,z,speed) + 2;
 			break;
 		case Constants.TO_FORWARD_CENTER:
-			this.RenderingCount=distance * caculateCount(Constants.displayedPlace,z,speed) + 1;
+			this.RenderingCount=distance * caculateCount(Constants.displayedPlace,z,speed) + 2;
 			break; 
 		case Constants.TO_BACKWARD_CENTER:
-			this.RenderingCount=distance * caculateCount(Constants.displayedPlace,z,speed) + 1;
+			this.RenderingCount=distance * caculateCount(Constants.displayedPlace,z,speed) + 2;
 			break;
 		case Constants.TO_FRONT:
-			this.RenderingCount=distance * caculateCount(Constants.disapearedPlace,z,speed) + 1;
+			this.RenderingCount=distance * caculateCount(Constants.disapearedPlace,z,speed) + 2;
 			break;
 		}
 	}

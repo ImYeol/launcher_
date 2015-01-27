@@ -318,7 +318,6 @@ public class VoiceListenerService extends Service {
 				outOfCommandSpeechCounter.start();
 				return ;
 			}
-			Log.d(tag, "par result: "+ str);
 			int cmdId=-1;
 			if (commands == null) {
 				if (str != null && preStringLen != str.length()) {
@@ -353,7 +352,6 @@ public class VoiceListenerService extends Service {
 					.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 			String str = data.toString();
 			str = str.subSequence(1, str.length() - 1).toString();
-			Log.d(tag, "result: "+ str);
 			int cmdId=-1;
 			if (commands == null) {
 				if (preStringLen != str.length())

@@ -55,7 +55,7 @@ public class ImageCommentDialog extends VoiceActivity {
 		commentView.setText("");
 		framelayout=(FrameLayout)findViewById(R.id.comment_layout);
 		Uri=getIntent().getExtras().getString("Uri");
-		CommandList=new String[]{"yes","No","clear","back","fact","bec","bank"};
+		CommandList=new String[]{"yes","No","clear","back","fact","bec","bank","thank","thanked"};
 		mGestureDetector=createGestureDetector(this);
 		audio=(AudioManager)getSystemService(AUDIO_SERVICE);
 	}
@@ -189,6 +189,7 @@ public class ImageCommentDialog extends VoiceActivity {
 		@Override
 		public void onFinish() {
 			Log.d(TAG, "timer triggered");
+			audio.playSoundEffect(SoundEffectConstants.CLICK);
 			if (endOfSpeechDialog == null) {
 				endOfSpeechDialog = WarningDialog
 						.getInstance()
